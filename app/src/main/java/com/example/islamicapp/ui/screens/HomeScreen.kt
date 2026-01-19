@@ -1007,27 +1007,7 @@ fun MuslimGuideSection() {
     }
 }
 
-data class GuideItem(val title: String, val subtitle: String, val actions: List<String>)
 
-@Composable
-fun GuideCard(item: GuideItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Card(
-        modifier = modifier.height(100.dp).clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF14402A).copy(alpha = 0.9f)),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(4.dp)) {
-            Text(
-                text = item.title,
-                color = Color.White,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                lineHeight = 16.sp
-            )
-        }
-    }
-}
 
 @Composable
 fun DailyStorySection() {
