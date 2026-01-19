@@ -89,6 +89,30 @@ import kotlinx.coroutines.tasks.await
 
 import com.example.islamicapp.settings.SettingsState
 
+data class GuideItem(val title: String, val subtitle: String, val actions: List<String>)
+
+data class Story(val title: String, val content: String)
+
+@Composable
+fun GuideCard(item: GuideItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Card(
+        modifier = modifier.height(100.dp).clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF14402A).copy(alpha = 0.9f)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(4.dp)) {
+            Text(
+                text = item.title,
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 16.sp
+            )
+        }
+    }
+}
+
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -1467,5 +1491,3 @@ fun SeasonalWorshipDialog(onDismiss: () -> Unit) {
     }
 }
 
-data class Story(val title: String, val content: String)
-}
