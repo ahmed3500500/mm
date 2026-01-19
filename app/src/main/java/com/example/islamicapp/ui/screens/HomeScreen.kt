@@ -84,6 +84,7 @@ import com.example.islamicapp.settings.AppSettings
 import com.example.islamicapp.prayer.PrayerTimesViewModel
 import com.example.islamicapp.settings.DailyIbadahState
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -1094,9 +1095,6 @@ fun LocationSelectionDialog(
         }
     )
 }
-
-import com.google.android.gms.location.Priority
-import androidx.core.content.ContextCompat
 
 private suspend fun loadLocationAndTimings(
     context: android.content.Context,
