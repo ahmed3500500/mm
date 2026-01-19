@@ -6,6 +6,7 @@ import android.location.Geocoder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.Surface
@@ -141,6 +146,7 @@ fun HomeScreen(
     var showRighteousPath by remember { mutableStateOf(false) }
     var showMentalPeace by remember { mutableStateOf(false) }
     var showSeasonalWorship by remember { mutableStateOf(false) }
+    var showLocationDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val locationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -149,6 +155,7 @@ fun HomeScreen(
             result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (granted) {
             scope.launch {
+                AppSettings.updateUseGps(context, true)
                 loadLocationAndTimings(context, viewModel)
             }
         }
@@ -198,46 +205,34 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize()
         )
         
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val timeText = now.format(DateTimeFormatter.ofPattern("hh:mm:ss a", Locale("ar")))
-            val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-            
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "الوقت الآن: $timeText",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        color = Color(0xFFFFD700),
-                        fontWeight = FontWeight.Bold,
-                        shadow = Shadow(
-                            color = Color.Black,
-                            offset = Offset(2f, 2f),
-                            blurRadius = 4f
-                        )
-                    )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "التاريخ الميلادي: $dateGregorian",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = Color.White,
-                        shadow = Shadow(
-                            color = Color.Black,
-                            offset = Offset(1f, 1f),
-                            blurRadius = 2f
-                        )
-                    )
-                )
-                if (state.hijriDate.isNotEmpty()) {
+            item {
+                val timeText = now.format(DateTimeFormatter.ofPattern("hh:mm:ss a", Locale("ar")))
+                val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
-                        text = "التاريخ الهجري: ${state.hijriDate}",
+                        text = "الوقت الآن: $timeText",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = Color(0xFFFFD700),
+                            fontWeight = FontWeight.Bold,
+                            shadow = Shadow(
+                                color = Color.Black,
+                                offset = Offset(2f, 2f),
+                                blurRadius = 4f
+                            )
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "التاريخ الميلادي: $dateGregorian",
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = Color.White,
                             shadow = Shadow(
@@ -247,179 +242,183 @@ fun HomeScreen(
                             )
                         )
                     )
+                    if (state.hijriDate.isNotEmpty()) {
+                        Text(
+                            text = "التاريخ الهجري: ${state.hijriDate}",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Color.White,
+                                shadow = Shadow(
+                                    color = Color.Black,
+                                    offset = Offset(1f, 1f),
+                                    blurRadius = 2f
+                                )
+                            )
+                        )
+                    }
                 }
+
+                Text(
+                    text = "مواقيت الصلاة لليوم",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        shadow = Shadow(
+                            color = Color.Black,
+                            offset = Offset(1f, 1f),
+                            blurRadius = 2f
+                        ),
+                    ),
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                )
+                
+                PrayerSection(
+                    state = state, 
+                    onRetry = { viewModel.refreshTimings() },
+                    onLocationClick = { showLocationDialog = true }
+                )
             }
 
-            Text(
-                text = "مواقيت الصلاة لليوم",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    shadow = Shadow(
-                        color = Color.Black,
-                        offset = Offset(1f, 1f),
-                        blurRadius = 2f
-                    )
+            item {
+                QuickAccessRow(
+                    onOpenQuranText = onOpenQuranText,
+                    onOpenTasbeeh = onOpenTasbeeh,
+                    onOpenDhikr = onOpenDhikr,
+                    onOpenQibla = onOpenQibla,
+                    onOpenSettings = onOpenSettings
                 )
-            )
+            }
+
+            item {
+                DailyIntentionSection(
+                    current = settings.dailyIntention,
+                    onChange = { value ->
+                        scope.launch { AppSettings.updateDailyIntention(context, value) }
+                    }
+                )
+            }
+
+            item {
+                val dayOfYear = now.dayOfYear
+                val dailyHadith = dailyAhadith[dayOfYear % dailyAhadith.size]
+                DailyHadithSection(hadith = dailyHadith)
+            }
+
+            item {
+                DailyIbadahSection(
+                    state = ibadahState,
+                    onToggleFajr = { value -> scope.launch { AppSettings.setFajrDone(context, value) } },
+                    onToggleDhuhr = { value -> scope.launch { AppSettings.setDhuhrDone(context, value) } },
+                    onToggleAsr = { value -> scope.launch { AppSettings.setAsrDone(context, value) } },
+                    onToggleMaghrib = { value -> scope.launch { AppSettings.setMaghribDone(context, value) } },
+                    onToggleIsha = { value -> scope.launch { AppSettings.setIshaDone(context, value) } },
+                    onToggleQuran = { value -> scope.launch { AppSettings.setQuranDone(context, value) } },
+                    onToggleDhikr = { value -> scope.launch { AppSettings.setDhikrDone(context, value) } },
+                    onToggleNawafil = { value -> scope.launch { AppSettings.setNawafilDone(context, value) } }
+                )
+            }
             
-            PrayerSection(state = state, onRetry = { viewModel.refreshTimings() })
+            item { DailySunanSection() }
+
+            item { MuslimGuideSection() }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            item { DailyStorySection() }
 
-            DailyIntentionSection(
-                current = settings.dailyIntention,
-                onChange = { value ->
-                    scope.launch { AppSettings.updateDailyIntention(context, value) }
-                }
-            )
+            item { GoodDeedsSection() }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            item { DailyActionSuggestionSection() }
 
-            val dayOfYear = now.dayOfYear
-            val dailyHadith = dailyAhadith[dayOfYear % dailyAhadith.size]
-
-            DailyHadithSection(hadith = dailyHadith)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            DailyIbadahSection(
-                state = ibadahState,
-                onToggleFajr = { value ->
-                    scope.launch { AppSettings.setFajrDone(context, value) }
-                },
-                onToggleDhuhr = { value ->
-                    scope.launch { AppSettings.setDhuhrDone(context, value) }
-                },
-                onToggleAsr = { value ->
-                    scope.launch { AppSettings.setAsrDone(context, value) }
-                },
-                onToggleMaghrib = { value ->
-                    scope.launch { AppSettings.setMaghribDone(context, value) }
-                },
-                onToggleIsha = { value ->
-                    scope.launch { AppSettings.setIshaDone(context, value) }
-                },
-                onToggleQuran = { value ->
-                    scope.launch { AppSettings.setQuranDone(context, value) }
-                },
-                onToggleDhikr = { value ->
-                    scope.launch { AppSettings.setDhikrDone(context, value) }
-                },
-                onToggleNawafil = { value ->
-                    scope.launch { AppSettings.setNawafilDone(context, value) }
-                }
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-
-            DailySunanSection()
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            MuslimGuideSection()
-
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            DailyStorySection()
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            GoodDeedsSection()
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            DailyActionSuggestionSection()
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "القرآن الكريم صوت",
                         subtitle = "تلاوة مشاري العفاسي",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenQuranAudio
                     )
-                }
-                item {
                     FeatureCard(
                         title = "القرآن الكريم قراءة",
-                        subtitle = "النص القرآني الكامل بدون تفسير",
+                        subtitle = "النص القرآني الكامل",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenQuranText
                     )
                 }
-                item {
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "السبحة الإلكترونية",
                         subtitle = "عد تسبيح متقدم",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenTasbeeh
                     )
-                }
-                item {
                     FeatureCard(
                         title = "أذكارك اليومية",
                         subtitle = "الصباح، المساء، النوم",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenDhikr
                     )
                 }
-                item {
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "قيام الليل",
                         subtitle = "برنامج صلاة الليل",
+                        modifier = Modifier.weight(1f),
                         onClick = { showNightPrayer = true }
                     )
-                }
-                item {
                     FeatureCard(
                         title = "واحة الأسرة",
                         subtitle = "أذكار وأدعية للأسرة",
+                        modifier = Modifier.weight(1f),
                         onClick = { showFamilySection = true }
                     )
                 }
-                item {
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "طريق الاستقامة",
-                        subtitle = "خطة للصلاة أو حفظ القرآن",
+                        subtitle = "خطة للصلاة أو الحفظ",
+                        modifier = Modifier.weight(1f),
                         onClick = { showRighteousPath = true }
                     )
-                }
-                item {
                     FeatureCard(
                         title = "السكينة النفسية",
-                        subtitle = "أذكار لتهدئة القلب بدون صوت",
+                        subtitle = "أذكار لتهدئة القلب",
+                        modifier = Modifier.weight(1f),
                         onClick = { showMentalPeace = true }
                     )
                 }
-                item {
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "العبادات الموسمية",
-                        subtitle = "خطط رمضان، العشر الأواخر، الحج",
+                        subtitle = "رمضان، الحج، عشر ذي الحجة",
+                        modifier = Modifier.weight(1f),
                         onClick = { showSeasonalWorship = true }
                     )
-                }
-                item {
                     FeatureCard(
                         title = "اتجاه القبلة",
                         subtitle = "تحديد القبلة بدقة",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenQibla
                     )
                 }
-                item {
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FeatureCard(
                         title = "أسماء الله الحسنى",
                         subtitle = "شرح 99 اسم",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenNames
                     )
-                }
-                item {
                     FeatureCard(
                         title = "الإعدادات",
                         subtitle = "المدينة، الصوت، الثيم",
+                        modifier = Modifier.weight(1f),
                         onClick = onOpenSettings
                     )
                 }
@@ -441,6 +440,31 @@ fun HomeScreen(
         if (showSeasonalWorship) {
             SeasonalWorshipDialog(onDismiss = { showSeasonalWorship = false })
         }
+        if (showLocationDialog) {
+            LocationSelectionDialog(
+                onDismiss = { showLocationDialog = false },
+                onUseGps = {
+                    showLocationDialog = false
+                    scope.launch {
+                        AppSettings.updateUseGps(context, true)
+                        locationLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    }
+                },
+                onManualCity = { city ->
+                    showLocationDialog = false
+                    scope.launch {
+                        AppSettings.updateUseGps(context, false)
+                        AppSettings.updateCity(context, city)
+                        viewModel.refreshTimingsForCity(city)
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -460,7 +484,7 @@ private fun formatTo12Hour(time: String): String {
 }
 
 @Composable
-fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
+fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit, onLocationClick: () -> Unit) {
     if (state.isLoading) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -499,6 +523,9 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
             ) {
                 Text(text = state.error, color = Color.White)
                 Text(text = "تحقق من الاتصال بالإنترنت ثم أعد المحاولة", color = Color.White, fontSize = 12.sp)
+                Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700), contentColor = Color.Black)) {
+                    Text("إعادة المحاولة")
+                }
             }
         }
         return
@@ -514,11 +541,30 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "المدينة: ${state.cityArabic}",
-                color = Color(0xFFFFD700),
-                fontWeight = FontWeight.SemiBold
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onLocationClick).padding(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle, // Placeholder, usually LocationOn
+                    contentDescription = "Change Location",
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "المدينة: ${state.cityArabic}",
+                    color = Color(0xFFFFD700),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "(تغيير)",
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                )
+            }
             Text(
                 text = "التاريخ الهجري: ${state.hijriDate}",
                 color = Color.White,
@@ -903,21 +949,130 @@ fun FeatureCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier,
-        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(110.dp)
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF14402A).copy(alpha = 0.85f)
+            containerColor = Color(0xFF14402A).copy(alpha = 0.9f)
         ),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, color = Color(0xFFFFD700), fontWeight = FontWeight.Bold)
-            Text(text = subtitle, color = Color.White, fontSize = 12.sp)
+            Text(
+                text = title,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 14.sp
+            )
         }
     }
+}
+
+@Composable
+fun QuickAccessRow(
+    onOpenQuranText: () -> Unit,
+    onOpenTasbeeh: () -> Unit,
+    onOpenDhikr: () -> Unit,
+    onOpenQibla: () -> Unit,
+    onOpenSettings: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "الوصول السريع",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
+        ) {
+            item { QuickAccessItem("القرآن", Icons.Default.MenuBook, onOpenQuranText) }
+            item { QuickAccessItem("السبحة", Icons.Default.Timer, onOpenTasbeeh) }
+            item { QuickAccessItem("الأذكار", Icons.Default.MenuBook, onOpenDhikr) }
+            item { QuickAccessItem("القبلة", Icons.Default.Explore, onOpenQibla) }
+            item { QuickAccessItem("الإعدادات", Icons.Default.Settings, onOpenSettings) }
+        }
+    }
+}
+
+@Composable
+fun QuickAccessItem(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .background(Color(0xFF14402A), androidx.compose.foundation.shape.CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(imageVector = icon, contentDescription = title, tint = Color(0xFFFFD700))
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = title, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun LocationSelectionDialog(
+    onDismiss: () -> Unit,
+    onUseGps: () -> Unit,
+    onManualCity: (String) -> Unit
+) {
+    var cityInput by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("تحديد الموقع") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(
+                    onClick = onUseGps,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27AE60))
+                ) {
+                    Text("استخدم موقعي الحالي (GPS)")
+                }
+                HorizontalDivider()
+                androidx.compose.material3.OutlinedTextField(
+                    value = cityInput,
+                    onValueChange = { cityInput = it },
+                    label = { Text("أدخل اسم المدينة يدوياً") },
+                    placeholder = { Text("مثال: القاهرة") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (cityInput.isNotBlank()) {
+                    onManualCity(cityInput)
+                }
+            }) {
+                Text("حفظ المدينة")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("إلغاء")
+            }
+        }
+    )
 }
 
 private suspend fun loadLocationAndTimings(
