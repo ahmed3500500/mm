@@ -579,6 +579,7 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
                 }
             }
         }
+    }
 }
 
 @Composable
