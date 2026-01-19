@@ -478,51 +478,6 @@ private fun formatTo12Hour(time: String): String {
 
 @Composable
 fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit, onLocationClick: () -> Unit) {
-    if (state.isLoading) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0F3B24).copy(alpha = 0.8f)
-            ),
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                CircularProgressIndicator(color = Color(0xFFFFD700))
-                Text(text = "جاري تحميل مواقيت الصلاة", color = Color.White)
-            }
-        }
-        return
-    }
-    if (state.error != null) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0F3B24).copy(alpha = 0.8f)
-            ),
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = state.error, color = Color.White)
-                Text(text = "تحقق من الاتصال بالإنترنت ثم أعد المحاولة", color = Color.White, fontSize = 12.sp)
-                Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700), contentColor = Color.Black)) {
-                    Text("إعادة المحاولة")
-                }
-            }
-        }
-        return
-    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -534,13 +489,14 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit, onLocationClic
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Always show location header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable(onClick = onLocationClick).padding(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle, // Placeholder, usually LocationOn
-                    contentDescription = "Change Location",
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Location",
                     tint = Color(0xFFFFD700),
                     modifier = Modifier.size(20.dp)
                 )
@@ -551,72 +507,100 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit, onLocationClic
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "(تغيير)",
-                    color = Color.LightGray,
-                    fontSize = 12.sp
-                )
             }
-            Text(
-                text = "التاريخ الهجري: ${state.hijriDate}",
-                color = Color.White,
-                fontSize = 14.sp
-            )
-            Text(
-                text = "الصلاة القادمة: ${state.nextPrayerName} بعد ${state.nextPrayerRemaining}",
-                color = Color.White,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                val highlightColor = Color(0xFFFFD700)
-                val normalColor = Color.White
-                val nextName = state.nextPrayerName
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "الفجر", color = Color(0xFFFFD700))
-                    Text(
-                        text = formatTo12Hour(state.fajr),
-                        color = if (nextName == "الفجر") highlightColor else normalColor
-                    )
+            if (state.isLoading) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(color = Color(0xFFFFD700))
+                    Text(text = "جاري تحميل مواقيت الصلاة...", color = Color.White)
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "الشروق", color = Color(0xFFFFD700))
-                    Text(text = formatTo12Hour(state.sunrise), color = normalColor)
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "الظهر", color = Color(0xFFFFD700))
+            } else if (state.error != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Text(
-                        text = formatTo12Hour(state.dhuhr),
-                        color = if (nextName == "الظهر") highlightColor else normalColor
+                        text = state.error,
+                        color = Color(0xFFFF6B6B),
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
                     )
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFD700),
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Text("إعادة المحاولة")
+                    }
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "العصر", color = Color(0xFFFFD700))
-                    Text(
-                        text = formatTo12Hour(state.asr),
-                        color = if (nextName == "العصر") highlightColor else normalColor
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "المغرب", color = Color(0xFFFFD700))
-                    Text(
-                        text = formatTo12Hour(state.maghrib),
-                        color = if (nextName == "المغرب") highlightColor else normalColor
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "العشاء", color = Color(0xFFFFD700))
-                    Text(
-                        text = formatTo12Hour(state.isha),
-                        color = if (nextName == "العشاء") highlightColor else normalColor
-                    )
+            } else {
+                Text(
+                    text = "التاريخ الهجري: ${state.hijriDate}",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "الصلاة القادمة: ${state.nextPrayerName} بعد ${state.nextPrayerRemaining}",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    val highlightColor = Color(0xFFFFD700)
+                    val normalColor = Color.White
+                    val nextName = state.nextPrayerName
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "الفجر", color = Color(0xFFFFD700))
+                        Text(
+                            text = formatTo12Hour(state.fajr),
+                            color = if (nextName == "الفجر") highlightColor else normalColor
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "الشروق", color = Color(0xFFFFD700))
+                        Text(text = formatTo12Hour(state.sunrise), color = normalColor)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "الظهر", color = Color(0xFFFFD700))
+                        Text(
+                            text = formatTo12Hour(state.dhuhr),
+                            color = if (nextName == "الظهر") highlightColor else normalColor
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "العصر", color = Color(0xFFFFD700))
+                        Text(
+                            text = formatTo12Hour(state.asr),
+                            color = if (nextName == "العصر") highlightColor else normalColor
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "المغرب", color = Color(0xFFFFD700))
+                        Text(
+                            text = formatTo12Hour(state.maghrib),
+                            color = if (nextName == "المغرب") highlightColor else normalColor
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "العشاء", color = Color(0xFFFFD700))
+                        Text(
+                            text = formatTo12Hour(state.isha),
+                            color = if (nextName == "العشاء") highlightColor else normalColor
+                        )
+                    }
                 }
             }
         }

@@ -12,8 +12,9 @@ interface AlAdhanService {
         @Query("method") method: Int = 2
     ): PrayerTimesResponse
 
-    @GET("timings")
+    @GET("timings/{date}")
     suspend fun getTimingsByCoordinates(
+        @retrofit2.http.Path("date") date: String,
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
         @Query("method") method: Int? = null

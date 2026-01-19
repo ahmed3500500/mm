@@ -20,9 +20,10 @@ object PrayerTimesRepository {
     }
 
     suspend fun getTimingsByCoordinates(latitude: Double, longitude: Double): PrayerTimesResponse {
+        val date = java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.US).format(java.util.Date())
         return withContext(Dispatchers.IO) {
             // method = null means auto-detect based on location/country by API
-            api.getTimingsByCoordinates(latitude, longitude, method = null)
+            api.getTimingsByCoordinates(date, latitude, longitude, method = null)
         }
     }
 }

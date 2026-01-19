@@ -87,7 +87,7 @@ class PrayerTimesViewModel : ViewModel() {
             updateNextPrayer()
             startTimer()
         } catch (e: Exception) {
-            applyFallbackTimings()
+            applyFallbackTimings("خطأ في المدينة: ${e.message}")
         }
     }
 
@@ -127,7 +127,7 @@ class PrayerTimesViewModel : ViewModel() {
             startTimer()
         } catch (e: Exception) {
             e.printStackTrace()
-            applyFallbackTimings()
+            applyFallbackTimings("خطأ: ${e.message}")
         }
     }
 
