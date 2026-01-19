@@ -95,7 +95,7 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Adhan for offline prayer calculation
-    implementation("com.batoulapps.adhan:adhan:1.3.0")
+    implementation("com.batoulapps.adhan:adhan:1.2.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
