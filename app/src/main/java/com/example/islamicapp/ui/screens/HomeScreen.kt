@@ -1321,6 +1321,7 @@ fun FamilySectionDialog(onDismiss: () -> Unit) {
         }
     }
 }
+*** End Patch
 
 @Composable
 fun RighteousPathDialog(onDismiss: () -> Unit) {
@@ -1490,4 +1491,3 @@ fun SeasonalWorshipDialog(onDismiss: () -> Unit) {
         }
     }
 }
-
