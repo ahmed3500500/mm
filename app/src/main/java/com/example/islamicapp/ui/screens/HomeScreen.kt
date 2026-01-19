@@ -61,7 +61,8 @@ import kotlinx.coroutines.tasks.await
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: PrayerTimesViewModel = viewModel(),
-    onOpenQuran: () -> Unit = {},
+    onOpenQuranAudio: () -> Unit = {},
+    onOpenQuranText: () -> Unit = {},
     onOpenTasbeeh: () -> Unit = {},
     onOpenDhikr: () -> Unit = {},
     onOpenQibla: () -> Unit = {},
@@ -201,9 +202,16 @@ fun HomeScreen(
             ) {
                 item {
                     FeatureCard(
-                        title = "القرآن الكريم",
+                        title = "القرآن الكريم صوت",
                         subtitle = "تلاوة مشاري العفاسي",
-                        onClick = onOpenQuran
+                        onClick = onOpenQuranAudio
+                    )
+                }
+                item {
+                    FeatureCard(
+                        title = "القرآن الكريم قراءة",
+                        subtitle = "نص كامل مع التفسير",
+                        onClick = onOpenQuranText
                     )
                 }
                 item {
