@@ -1,6 +1,14 @@
 package com.example.islamicapp.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.islamicapp.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -54,60 +61,114 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
             AdhanScheduler.scheduleNextAdhan(context, state.nextPrayerDiffMinutes)
         }
     }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF062D1A), Color(0xFF0B5B34))
+    
+    Box(modifier = modifier.fillMaxSize()) {
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.bg_home),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        
+        // Content Overlay
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            val timeText = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+            val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+            
+            // Header Section
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "الوقت الآن: $timeText",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        color = Color(0xFFFFD700),
+                        fontWeight = FontWeight.Bold,
+                        shadow = Shadow(
+                            color = Color.Black,
+                            offset = Offset(2f, 2f),
+                            blurRadius = 4f
+                        )
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "التاريخ الميلادي: $dateGregorian",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                        shadow = Shadow(
+                            color = Color.Black,
+                            offset = Offset(1f, 1f),
+                            blurRadius = 2f
+                        )
+                    )
+                )
+                if (state.hijriDate.isNotEmpty()) {
+                    Text(
+                        text = "التاريخ الهجري: ${state.hijriDate}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color.White,
+                            shadow = Shadow(
+                                color = Color.Black,
+                                offset = Offset(1f, 1f),
+                                blurRadius = 2f
+                            )
+                        )
+                    )
+                }
+            }
+
+            Text(
+                text = "مواقيت الصلاة لليوم",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        offset = Offset(1f, 1f),
+                        blurRadius = 2f
+                    )
                 )
             )
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        val timeText = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-        val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-        Text(
-            text = "الوقت الآن: $timeText",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = Color(0xFFFFD700),
-                fontWeight = FontWeight.Bold
-            )
-        )
-        Text(
-            text = "التاريخ الميلادي: $dateGregorian",
-            style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-        )
-        if (state.hijriDate.isNotEmpty()) {
-            Text(
-                text = "التاريخ الهجري: ${state.hijriDate}",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-            )
+            
+            PrayerSection(state = state, onRetry = { viewModel.refreshTimings() })
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Navigation Grid
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                item {
+                    FeatureCard(title = "القرآن الكريم", subtitle = "تلاوة مشاري العفاسي")
+                }
+                item {
+                    FeatureCard(title = "السبحة الإلكترونية", subtitle = "عد تسبيح متقدم")
+                }
+                item {
+                    FeatureCard(title = "أذكارك اليومية", subtitle = "الصباح، المساء، النوم")
+                }
+                item {
+                    FeatureCard(title = "اتجاه القبلة", subtitle = "تحديد القبلة بدقة")
+                }
+                item {
+                    FeatureCard(title = "أسماء الله الحسنى", subtitle = "شرح 99 اسم")
+                }
+                item {
+                    FeatureCard(title = "الإعدادات", subtitle = "المدينة، الصوت، الثيم")
+                }
+            }
         }
-        Text(
-            text = "مواقيت الصلاة لليوم",
-            style = MaterialTheme.typography.titleMedium.copy(color = Color.White)
-        )
-        PrayerSection(state = state, onRetry = { viewModel.refreshTimings() })
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            FeatureCard(
-                title = "القرآن الكريم",
-                subtitle = "تلاوة مشاري العفاسي"
-            )
-            FeatureCard(
-                title = "السبحة الإلكترونية",
-                subtitle = "عد تسبيح متقدم"
-            )
-        }
-        FeatureCard(
-            title = "أذكارك اليومية",
-            subtitle = "الصباح، المساء، النوم، بعد الصلاة",
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 
@@ -117,7 +178,7 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0F3B24)
+                containerColor = Color(0xFF0F3B24).copy(alpha = 0.8f)
             ),
             shape = RoundedCornerShape(24.dp)
         ) {
@@ -138,7 +199,7 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0F3B24)
+                containerColor = Color(0xFF0F3B24).copy(alpha = 0.8f)
             ),
             shape = RoundedCornerShape(24.dp)
         ) {
@@ -158,7 +219,7 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0F3B24)
+            containerColor = Color(0xFF0F3B24).copy(alpha = 0.8f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -220,7 +281,7 @@ fun FeatureCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF14402A)
+            containerColor = Color(0xFF14402A).copy(alpha = 0.85f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
