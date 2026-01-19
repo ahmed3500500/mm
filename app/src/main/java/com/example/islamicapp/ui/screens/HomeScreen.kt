@@ -46,6 +46,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material3.Surface
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material.icons.filled.Check
 import com.example.islamicapp.R
 import com.example.islamicapp.adhan.AdhanScheduler
 import com.example.islamicapp.prayer.PrayerTimesUiState
@@ -87,6 +112,10 @@ fun HomeScreen(
         initial = DailyIbadahState()
     )
     var now by remember { mutableStateOf(LocalDateTime.now(ZoneId.systemDefault())) }
+    var showNightPrayer by remember { mutableStateOf(false) }
+    var showFamilySection by remember { mutableStateOf(false) }
+    var showRighteousPath by remember { mutableStateOf(false) }
+    var showMentalPeace by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val locationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -263,6 +292,18 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            MuslimGuideSection()
+
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            DailyStorySection()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            GoodDeedsSection()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -299,6 +340,34 @@ fun HomeScreen(
                 }
                 item {
                     FeatureCard(
+                        title = "قيام الليل",
+                        subtitle = "برنامج صلاة الليل",
+                        onClick = { showNightPrayer = true }
+                    )
+                }
+                item {
+                    FeatureCard(
+                        title = "واحة الأسرة",
+                        subtitle = "أذكار وأدعية للأسرة",
+                        onClick = { showFamilySection = true }
+                    )
+                }
+                item {
+                    FeatureCard(
+                        title = "طريق الاستقامة",
+                        subtitle = "خطة للصلاة أو حفظ القرآن",
+                        onClick = { showRighteousPath = true }
+                    )
+                }
+                item {
+                    FeatureCard(
+                        title = "السكينة النفسية",
+                        subtitle = "أذكار لتهدئة القلب بدون صوت",
+                        onClick = { showMentalPeace = true }
+                    )
+                }
+                item {
+                    FeatureCard(
                         title = "اتجاه القبلة",
                         subtitle = "تحديد القبلة بدقة",
                         onClick = onOpenQibla
@@ -319,6 +388,19 @@ fun HomeScreen(
                     )
                 }
             }
+        }
+        
+        if (showNightPrayer) {
+            NightPrayerDialog(onDismiss = { showNightPrayer = false })
+        }
+        if (showFamilySection) {
+            FamilySectionDialog(onDismiss = { showFamilySection = false })
+        }
+        if (showRighteousPath) {
+            RighteousPathDialog(onDismiss = { showRighteousPath = false })
+        }
+        if (showMentalPeace) {
+            MentalPeaceDialog(onDismiss = { showMentalPeace = false })
         }
     }
 }
@@ -458,7 +540,6 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -828,5 +909,405 @@ private suspend fun loadLocationAndTimings(
         }
     } catch (e: Exception) {
     }
+}
+
+@Composable
+fun MuslimGuideSection() {
+    val items = listOf(
+        GuideItem("قبل النوم", "آداب وأذكار النوم", listOf("الوضوء", "نفض الفراش", "قراءة المعوذات", "آية الكرسي", "سورة الملك")),
+        GuideItem("بعد الاستيقاظ", "سنن الاستيقاظ", listOf("مسح الوجه", "دعاء الاستيقاظ", "السواك", "غسل اليدين")),
+        GuideItem("عند الضيق", "علاج الهم والحزن", listOf("الوضوء والصلاة", "دعاء الكرب", "الاستغفار", "الصدقة")),
+        GuideItem("عند الفرح", "شكر النعمة", listOf("سجود الشكر", "الحمد والثناء", "الصدقة", "التواضع"))
+    )
+    var selectedItem by remember { mutableStateOf<GuideItem?>(null) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "دليل المسلم اليومي",
+            color = Color(0xFFFFD700),
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items.forEach { item ->
+                GuideCard(
+                    item = item,
+                    modifier = Modifier.weight(1f),
+                    onClick = { selectedItem = item }
+                )
+            }
+        }
+    }
+
+    if (selectedItem != null) {
+        AlertDialog(
+            onDismissRequest = { selectedItem = null },
+            title = { Text(text = selectedItem!!.title, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(text = selectedItem!!.subtitle, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 8.dp))
+                    selectedItem!!.actions.forEach { action ->
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF0B5B34), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = action)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { selectedItem = null }) {
+                    Text("إغلاق")
+                }
+            }
+        )
     }
 }
+
+data class GuideItem(val title: String, val subtitle: String, val actions: List<String>)
+
+@Composable
+fun GuideCard(item: GuideItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Card(
+        modifier = modifier.height(100.dp).clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF14402A).copy(alpha = 0.9f)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(4.dp)) {
+            Text(
+                text = item.title,
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 16.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun DailyStorySection() {
+    val stories = listOf(
+        Story("قصة الصحابي أبو بكر الصديق", "أول الخلفاء الراشدين، وأحب الرجال إلى النبي صلى الله عليه وسلم. كان رفيقه في الهجرة، وأنفق ماله كله في سبيل الله. موقفه يوم وفاة النبي ثبت الأمة."),
+        Story("قصة التابعي سعيد بن المسيب", "سيد التابعين، رفض تزويج ابنته للخليفة وزوجها لطالب علم فقير بدرهمين. كان لا تفوته تكبيرة الإحرام في المسجد أربعين سنة."),
+        Story("قصة عمر بن الخطاب", "الفاروق الذي فرق الله به بين الحق والباطل. إسلامه كان عزة للمسلمين. عدله ملأ الأرض، وكان يخشى الله في الدابة لو عثرت في العراق."),
+        Story("قصة عثمان بن عفان", "ذو النورين، تستحي منه الملائكة. جهز جيش العسرة، واشترى بئر رومة للمسلمين. جمع القرآن الكريم في مصحف واحد.")
+    )
+    val dayOfYear = java.time.LocalDate.now().dayOfYear
+    val story = stories[dayOfYear % stories.size]
+    var showStory by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { showStory = true },
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2D3436)),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "قصة اليوم",
+                    color = Color(0xFFFFD700),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = story.title,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+    }
+
+    if (showStory) {
+        AlertDialog(
+            onDismissRequest = { showStory = false },
+            title = { Text(text = story.title, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(text = story.content, style = MaterialTheme.typography.bodyMedium)
+            },
+            confirmButton = {
+                TextButton(onClick = { showStory = false }) {
+                    Text("إغلاق")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun GoodDeedsSection() {
+    val deeds = listOf("صدقة ولو قليلة", "بر الوالدين", "إماطة الأذى", "التبسم في وجه أخيك", "ذكر الله", "صلة الرحم")
+    var completedDeeds by remember { mutableStateOf(setOf<String>()) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "ميزان الأعمال (تذكير يومي)",
+            color = Color(0xFFFFD700),
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(deeds) { deed ->
+                FilterChip(
+                    selected = completedDeeds.contains(deed),
+                    onClick = {
+                        completedDeeds = if (completedDeeds.contains(deed)) {
+                            completedDeeds - deed
+                        } else {
+                            completedDeeds + deed
+                        }
+                    },
+                    label = { Text(deed) },
+                    leadingIcon = if (completedDeeds.contains(deed)) {
+                        { Icon(Icons.Default.Check, contentDescription = null) }
+                    } else null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF0B5B34),
+                        selectedLabelColor = Color.White
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun NightPrayerDialog(onDismiss: () -> Unit) {
+    var rakahs by remember { mutableStateOf(2) }
+    var finished by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "برنامج قيام الليل", fontWeight = FontWeight.Bold) },
+        text = {
+            if (!finished) {
+                Column {
+                    Text("كم ركعة تنوي أن تصلي؟", modifier = Modifier.padding(bottom = 16.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = { if (rakahs > 2) rakahs -= 2 }) { Text("-") }
+                        Text(text = "$rakahs ركعات", modifier = Modifier.padding(horizontal = 16.dp), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Button(onClick = { rakahs += 2 }) { Text("+") }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { finished = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0B5B34))
+                    ) {
+                        Text("بدء الصلاة (سأضغط هنا عند الانتهاء)")
+                    }
+                }
+            } else {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Text("تقبل الله طاعتك", fontWeight = FontWeight.Bold, color = Color(0xFF0B5B34), modifier = Modifier.padding(bottom = 8.dp))
+                    Text("دعاء ما بعد قيام الليل:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(
+                        "اللهم لك الحمد أنت نور السماوات والأرض ومن فيهن، ولك الحمد أنت قيم السماوات والأرض ومن فيهن، ولك الحمد أنت الحق، ووعدك حق، ولقاؤك حق، والجنة حق، والنار حق، والنبيون حق، ومحمد صلى الله عليه وسلم حق، والساعة حق.\n" +
+                        "اللهم لك أسلمت، وبك آمنت، وعليك توكلت، وإليك أنبت، وبك خاصمت، وإليك حاكمت، فاغفر لي ما قدمت وما أخرت، وما أسررت وما أعلنت، أنت المقدم وأنت المؤخر، لا إله إلا أنت.\n" +
+                        "اللهم اهدني فيمن هديت، وعافني فيمن عافيت، وتولني فيمن توليت، وبارك لي فيما أعطيت، وقني شر ما قضيت.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("إغلاق")
+            }
+        }
+    )
+}
+
+@Composable
+fun FamilySectionDialog(onDismiss: () -> Unit) {
+    val kidsDhikr = listOf("سبحان الله (33 مرة)", "الحمد لله (33 مرة)", "الله أكبر (33 مرة)", "لا إله إلا الله")
+    val familyDuas = listOf("اللهم بارك في بيتنا", "اللهم احفظ أولادي", "اللهم ارزقنا البركة", "اللهم ألف بين قلوبنا")
+    val morals = listOf("الصدق في الحديث", "احترام الكبير", "العطف على الصغير", "مساعدة الأم والأب")
+
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("واحة الأسرة", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color(0xFF0B5B34))
+                    IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, contentDescription = "إغلاق") }
+                }
+                
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    item {
+                        Text("أذكار للأطفال", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        kidsDhikr.forEach { dhikr ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+                            ) {
+                                Text(dhikr, modifier = Modifier.padding(16.dp), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+                    
+                    item {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    }
+
+                    item {
+                        Text("أدعية للأسرة", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        familyDuas.forEach { dua ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
+                            ) {
+                                Text(dua, modifier = Modifier.padding(16.dp), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+
+                    item {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    }
+
+                    item {
+                        Text("أخلاق إسلامية", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        morals.forEach { moral ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0))
+                            ) {
+                                Text(moral, modifier = Modifier.padding(16.dp), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RighteousPathDialog(onDismiss: () -> Unit) {
+    var step by remember { mutableStateOf(0) } // 0: Selection, 1: Prayer, 2: Quran
+    
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("طريق الاستقامة", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, contentDescription = null) }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (step == 0) {
+                    Text("ما هو هدفك الحالي؟", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { step = 1 }, modifier = Modifier.fillMaxWidth()) {
+                        Text("أريد الالتزام بالصلاة")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { step = 2 }, modifier = Modifier.fillMaxWidth()) {
+                        Text("أريد حفظ القرآن الكريم")
+                    }
+                } else if (step == 1) {
+                    Text("خطة الالتزام بالصلاة", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B5B34))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("نبدأ معك خطوة بخطوة:", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val steps = listOf(
+                        "الأسبوع الأول: التركيز فقط على صلاة الفرض في أي وقت.",
+                        "الأسبوع الثاني: محاولة الصلاة في أول الوقت.",
+                        "الأسبوع الثالث: إضافة السنن الرواتب.",
+                        "الأسبوع الرابع: المحافظة على الأذكار بعد الصلاة."
+                    )
+                    steps.forEachIndexed { index, text ->
+                        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))) {
+                            Text("${index + 1}. $text", modifier = Modifier.padding(16.dp))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(onClick = { step = 0 }) { Text("عودة") }
+                } else if (step == 2) {
+                    Text("خطة حفظ القرآن", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0B5B34))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("خطوات ميسرة للحفظ:", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val steps = listOf(
+                        "المرحلة الأولى: حفظ قصار السور (جزء عم).",
+                        "المرحلة الثانية: حفظ سورة الملك والسجدة.",
+                        "المرحلة الثالثة: حفظ 3 آيات يومياً من سورة البقرة.",
+                        "المرحلة الرابعة: مراجعة ما تم حفظه يومياً."
+                    )
+                    steps.forEachIndexed { index, text ->
+                        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))) {
+                            Text("${index + 1}. $text", modifier = Modifier.padding(16.dp))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(onClick = { step = 0 }) { Text("عودة") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MentalPeaceDialog(onDismiss: () -> Unit) {
+    val items = listOf(
+        "لا إله إلا أنت سبحانك إني كنت من الظالمين",
+        "ربي إني مسني الضر وأنت أرحم الراحمين",
+        "حسبنا الله ونعم الوكيل",
+        "يا حي يا قيوم برحمتك أستغيث"
+    )
+    
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF5F5F5)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("السكينة النفسية", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color(0xFF4A90E2))
+                    IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, contentDescription = null) }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("أذكار لتهدئة النفس وإزالة القلق", fontSize = 16.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(16.dp))
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(items) { text ->
+                        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                            Text(text, modifier = Modifier.padding(24.dp), fontSize = 18.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Medium, color = Color(0xFF2C3E50))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+data class Story(val title: String, val content: String)
