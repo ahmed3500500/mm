@@ -46,6 +46,16 @@ class PrayerTimesViewModel : ViewModel() {
         }
     }
 
+    fun refreshTimingsForCity(cityName: String) {
+        _uiState.value = _uiState.value.copy(
+            cityArabic = cityName,
+            cityEnglish = cityName
+        )
+        viewModelScope.launch {
+            loadTimingsByCity()
+        }
+    }
+
     fun refreshTimingsForLocation(latitude: Double, longitude: Double, cityArabic: String?) {
         viewModelScope.launch {
             loadTimingsByCoordinates(latitude, longitude, cityArabic)

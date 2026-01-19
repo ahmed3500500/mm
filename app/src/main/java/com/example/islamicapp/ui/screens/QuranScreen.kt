@@ -1,7 +1,7 @@
 package com.example.islamicapp.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,9 +20,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,12 +37,25 @@ import androidx.compose.ui.unit.sp
 import com.example.islamicapp.data.QuranData
 import com.example.islamicapp.data.SurahItem
 import com.example.islamicapp.quran.QuranPlayer
+import com.example.islamicapp.quran.Reciter
+import com.example.islamicapp.settings.AppSettings
+import kotlinx.coroutines.launch
 
 @Composable
 fun QuranScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val settings by AppSettings.observe(context).collectAsState(
+        initial = com.example.islamicapp.settings.SettingsState()
+    )
     val surahs = remember { QuranData.getSurahList() }
     var current by remember { mutableStateOf<SurahItem?>(null) }
+    var selectedReciter by remember { mutableStateOf(settings.reciter) }
+
+    LaunchedEffect(settings.reciter) {
+        selectedReciter = settings.reciter
+        QuranPlayer.setReciter(settings.reciter)
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -57,6 +72,12 @@ fun QuranScreen(modifier: Modifier = Modifier) {
                 color = Color(0xFFFFD700),
                 fontWeight = FontWeight.Bold
             )
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "القارئ الحالي: ${selectedReciter.displayName}",
+            color = Color.White,
+            fontSize = 12.sp
         )
         Spacer(modifier = Modifier.height(12.dp))
         if (current != null) {
@@ -162,7 +183,7 @@ fun SurahRow(surah: SurahItem, onPlay: () -> Unit) {
             Column {
                 Text(text = surah.name, color = Color.White)
                 Text(
-                    text = "مشاري العفاسي",
+                    text = "الصوت الحالي",
                     color = Color(0xFFFFD700),
                     fontSize = 12.sp
                 )
@@ -175,5 +196,29 @@ fun SurahRow(surah: SurahItem, onPlay: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun ReciterFilterChip(
+    reciter: Reciter,
+    selectedReciter: Reciter,
+    onSelected: (Reciter) -> Unit
+) {
+    FilterChip(
+        selected = selectedReciter == reciter,
+        onClick = { onSelected(reciter) },
+        label = {
+            Text(
+                text = reciter.displayName,
+                fontSize = 12.sp
+            )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = Color(0xFFFFD700),
+            selectedLabelColor = Color(0xFF062D1A),
+            containerColor = Color(0xFF14402A),
+            labelColor = Color.White
+        )
+    )
 }
 

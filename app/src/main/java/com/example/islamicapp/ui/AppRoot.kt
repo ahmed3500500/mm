@@ -1,5 +1,6 @@
 package com.example.islamicapp.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
@@ -26,6 +27,7 @@ import com.example.islamicapp.ui.screens.DhikrScreen
 import com.example.islamicapp.ui.screens.HomeScreen
 import com.example.islamicapp.ui.screens.MoreScreen
 import com.example.islamicapp.ui.screens.NamesScreen
+import com.example.islamicapp.ui.screens.NotificationsScreen
 import com.example.islamicapp.ui.screens.QiblaScreen
 import com.example.islamicapp.ui.screens.QuranScreen
 import com.example.islamicapp.ui.screens.QuranTextScreen
@@ -41,19 +43,32 @@ enum class AppDestination(val label: String, val icon: ImageVector, val isBottom
     Dhikr("الأذكار", Icons.Filled.MenuBook, false),
     Qibla("القبلة", Icons.Filled.Explore, false),
     Names("الأسماء", Icons.Filled.List, false),
-    Settings("الإعدادات", Icons.Filled.Settings, false)
+    Settings("الإعدادات", Icons.Filled.Settings, false),
+    Notifications("الإشعارات", Icons.Filled.Settings, false)
 }
 
 @Composable
 fun AppRoot() {
-    var current by remember { mutableStateOf(AppDestination.Home) }
+    var backStack by remember { mutableStateOf(listOf(AppDestination.Home)) }
+    val current = backStack.last()
+
+    BackHandler(enabled = backStack.size > 1) {
+        backStack = backStack.dropLast(1)
+    }
+
     Scaffold(
         bottomBar = {
             NavigationBar {
                 AppDestination.values().filter { it.isBottomItem }.forEach { dest ->
                     NavigationBarItem(
                         selected = current == dest,
-                        onClick = { current = dest },
+                        onClick = {
+                            if (dest == AppDestination.Home) {
+                                backStack = listOf(AppDestination.Home)
+                            } else if (current != dest) {
+                                backStack = backStack + dest
+                            }
+                        },
                         icon = { Icon(dest.icon, contentDescription = dest.label) },
                         label = { Text(dest.label) }
                     )
@@ -64,13 +79,13 @@ fun AppRoot() {
         when (current) {
             AppDestination.Home -> HomeScreen(
                 modifier = Modifier.padding(padding),
-                onOpenQuranAudio = { current = AppDestination.QuranAudio },
-                onOpenQuranText = { current = AppDestination.QuranText },
-                onOpenTasbeeh = { current = AppDestination.Tasbeeh },
-                onOpenDhikr = { current = AppDestination.Dhikr },
-                onOpenQibla = { current = AppDestination.Qibla },
-                onOpenNames = { current = AppDestination.Names },
-                onOpenSettings = { current = AppDestination.Settings }
+                onOpenQuranAudio = { backStack = backStack + AppDestination.QuranAudio },
+                onOpenQuranText = { backStack = backStack + AppDestination.QuranText },
+                onOpenTasbeeh = { backStack = backStack + AppDestination.Tasbeeh },
+                onOpenDhikr = { backStack = backStack + AppDestination.Dhikr },
+                onOpenQibla = { backStack = backStack + AppDestination.Qibla },
+                onOpenNames = { backStack = backStack + AppDestination.Names },
+                onOpenSettings = { backStack = backStack + AppDestination.Settings }
             )
             AppDestination.QuranAudio -> QuranScreen(Modifier.padding(padding))
             AppDestination.QuranText -> QuranTextScreen(Modifier.padding(padding))

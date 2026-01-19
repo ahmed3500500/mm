@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.LocalDate
 import com.example.islamicapp.qibla.QiblaCalculator
 import com.example.islamicapp.tasbeeh.TasbeehPreferences
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +73,7 @@ fun MoreScreen(modifier: Modifier = Modifier) {
         )
         TasbeehSection()
         MorningEveningDhikrSection()
+        DailyKnowledgeSection()
         QiblaSection()
         NamesOfAllahSection()
         SettingsPreviewSection()
@@ -275,6 +277,123 @@ private fun SettingsPreviewSection() {
                 color = Color.White,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Start
+            )
+        }
+    }
+}
+
+data class KnowledgeItem(
+    val title: String,
+    val text: String
+)
+
+@Composable
+private fun DailyKnowledgeSection() {
+    val seerahItems = listOf(
+        KnowledgeItem(
+            "موقف رحمة النبي ﷺ",
+            "مرّ النبي ﷺ على امرأة تبكي عند قبر، فقال: اتقي الله واصبري. هذا يعلّمنا الرفق في النصح عند الحزن."
+        ),
+        KnowledgeItem(
+            "تواضع النبي ﷺ",
+            "كان ﷺ يجلس حيث ينتهي به المجلس، ويخدم أهله، ويجالس الفقراء، فيذكّرنا أن القدوة ليست في المظهر بل في التواضع."
+        )
+    )
+    val fiqhItems = listOf(
+        KnowledgeItem(
+            "الطهارة ببساطة",
+            "الوضوء هو غسل الوجه واليدين إلى المرفقين ومسح الرأس وغسل الرجلين مع النية، بدون تعقيد ولا تفصيل مرهِق."
+        ),
+        KnowledgeItem(
+            "الصلاة في وقتها",
+            "أهم شيء في الصلاة أن تُؤدَّى في وقتها بخشوع قدر الاستطاعة، ولو مع أخطاء يسيرة، فالله غفور رحيم."
+        )
+    )
+    val akhlaqItems = listOf(
+        KnowledgeItem(
+            "حسن الظن",
+            "قبل أن تسيء الظن بأحد، اسأل نفسك: هل عندي يقين؟ أم هي ظنون؟ حسن الظن عبادة قلبية تحفظ العلاقات."
+        ),
+        KnowledgeItem(
+            "الصبر في المواقف اليومية",
+            "الصبر ليس فقط على المصائب الكبيرة، بل أيضًا على زحمة الطريق، تأخر المعاملات، وأخطاء الناس معنا."
+        )
+    )
+    val mistakeItems = listOf(
+        KnowledgeItem(
+            "خطأ شائع في الدعاء",
+            "من الأخطاء ظنّ أن الدعاء يُستجاب فورًا دائمًا، والصواب أن الله يستجيب بحكمة: إما أن يعطيك، أو يدفع عنك شرًا، أو يدخرها لك."
+        ),
+        KnowledgeItem(
+            "الخلط بين السنّة والواجب",
+            "بعض السنن يظنها الناس واجبة، فيُشدّدون على أنفسهم وعلى غيرهم، والأصل التيسير وترك الجدال في مسائل الخلاف."
+        )
+    )
+
+    val today = LocalDate.now().dayOfYear
+    val seerah = seerahItems[today % seerahItems.size]
+    val fiqh = fiqhItems[today % fiqhItems.size]
+    val akhlaq = akhlaqItems[today % akhlaqItems.size]
+    val mistake = mistakeItems[today % mistakeItems.size]
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF14402A)),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "بطاقة اليوم",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Text(
+                text = "سيرة نبوية:",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = seerah.text,
+                color = Color.White,
+                fontSize = 13.sp
+            )
+            Text(
+                text = "فقه مبسط:",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = fiqh.text,
+                color = Color.White,
+                fontSize = 13.sp
+            )
+            Text(
+                text = "خلق وسلوك:",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = akhlaq.text,
+                color = Color.White,
+                fontSize = 13.sp
+            )
+            Text(
+                text = "خطأ شائع وتصحيحه:",
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = mistake.text,
+                color = Color.White,
+                fontSize = 13.sp
             )
         }
     }
