@@ -94,20 +94,31 @@ class PrayerTimesViewModel : ViewModel() {
     private suspend fun loadTimingsByCoordinates(latitude: Double, longitude: Double, cityArabic: String?) {
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
         try {
+            // Update city name immediately if provided, so user sees "Loading for [City]..."
+            if (cityArabic != null) {
+                _uiState.value = _uiState.value.copy(
+                    cityArabic = cityArabic,
+                    cityEnglish = "Current Location"
+                )
+            }
+
             val response = PrayerTimesRepository.getTimingsByCoordinates(latitude, longitude)
             val data = response.data
             val timings = data?.timings
             val hijri = data?.date?.hijri?.date.orEmpty()
+            
+            if (timings == null) throw Exception("Empty timings data")
+
             val newState = _uiState.value.copy(
-                cityArabic = cityArabic ?: "موقعك الحالي",
-                cityEnglish = "Current",
+                cityArabic = cityArabic ?: _uiState.value.cityArabic,
+                cityEnglish = "Current Location",
                 hijriDate = hijri,
-                fajr = timings?.fajr.orEmpty(),
-                sunrise = timings?.sunrise.orEmpty(),
-                dhuhr = timings?.dhuhr.orEmpty(),
-                asr = timings?.asr.orEmpty(),
-                maghrib = timings?.maghrib.orEmpty(),
-                isha = timings?.isha.orEmpty(),
+                fajr = timings.fajr.orEmpty(),
+                sunrise = timings.sunrise.orEmpty(),
+                dhuhr = timings.dhuhr.orEmpty(),
+                asr = timings.asr.orEmpty(),
+                maghrib = timings.maghrib.orEmpty(),
+                isha = timings.isha.orEmpty(),
                 isLoading = false,
                 error = null
             )
@@ -115,12 +126,19 @@ class PrayerTimesViewModel : ViewModel() {
             updateNextPrayer()
             startTimer()
         } catch (e: Exception) {
+            e.printStackTrace()
             applyFallbackTimings()
         }
     }
 
     private fun applyFallbackTimings() {
+        // Preserve current city info if available, otherwise default to Makkah
+        val currentCityArabic = if (_uiState.value.cityArabic != "مكة المكرمة") _uiState.value.cityArabic else "مكة المكرمة"
+        val currentCityEnglish = if (_uiState.value.cityEnglish != "Makkah") _uiState.value.cityEnglish else "Makkah"
+        
         val fallbackState = _uiState.value.copy(
+            cityArabic = currentCityArabic,
+            cityEnglish = currentCityEnglish,
             hijriDate = "19 رجب 1447",
             fajr = "05:41",
             sunrise = "06:59",
@@ -129,7 +147,7 @@ class PrayerTimesViewModel : ViewModel() {
             maghrib = "18:02",
             isha = "19:32",
             isLoading = false,
-            error = null
+            error = "فشل في جلب المواقيت. يرجى التحقق من الإنترنت."
         )
         _uiState.value = fallbackState
         updateNextPrayer()

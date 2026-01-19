@@ -76,8 +76,8 @@ private fun settingsStringsFor(language: AppLanguage): SettingsStrings {
             screenTitle = "الإعدادات",
             locationSectionTitle = "الموقع والمدينة",
             autoGpsTitle = "تحديد الموقع تلقائياً (GPS)",
-            manualCityTitle = "المدينة اليدوية",
-            manualCityUnset = "غير محددة",
+            manualCityTitle = "المدينة الحالية",
+            manualCityUnset = "جاري التحديد...",
             quranAudioSectionTitle = "القرآن الصوتي",
             adhanSectionTitle = "الأذان والإشعارات",
             adhanEnabledTitle = "تفعيل الأذان",
@@ -193,15 +193,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, onOpenNotifications: () -> Uni
             ) {
                 item {
                     SettingsSectionTitle(strings.locationSectionTitle)
-                }
-                item {
-                    SettingsSwitchRow(
-                        title = strings.autoGpsTitle,
-                        checked = settings.useGps,
-                        onCheckedChange = { value ->
-                            scope.launch { AppSettings.updateUseGps(context, value) }
-                        }
-                    )
                 }
                 item {
                     SettingsTextRow(

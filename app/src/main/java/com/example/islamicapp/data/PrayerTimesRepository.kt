@@ -21,7 +21,8 @@ object PrayerTimesRepository {
 
     suspend fun getTimingsByCoordinates(latitude: Double, longitude: Double): PrayerTimesResponse {
         return withContext(Dispatchers.IO) {
-            api.getTimingsByCoordinates(latitude, longitude)
+            // method = null means auto-detect based on location/country by API
+            api.getTimingsByCoordinates(latitude, longitude, method = null)
         }
     }
 }

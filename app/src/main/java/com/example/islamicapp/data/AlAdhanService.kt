@@ -16,7 +16,7 @@ interface AlAdhanService {
     suspend fun getTimingsByCoordinates(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("method") method: Int = 2
+        @Query("method") method: Int? = null
     ): PrayerTimesResponse
 }
 

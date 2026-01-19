@@ -156,15 +156,6 @@ fun HomeScreen(
     var showRighteousPath by remember { mutableStateOf(false) }
     var showMentalPeace by remember { mutableStateOf(false) }
     var showSeasonalWorship by remember { mutableStateOf(false) }
-    var showLocationDialog by remember { mutableStateOf(false) }
-    var hasPromptedLocation by remember { mutableStateOf(false) }
-
-    LaunchedEffect(state.cityArabic) {
-        if (!hasPromptedLocation && state.cityArabic == "مكة المكرمة") {
-            showLocationDialog = true
-            hasPromptedLocation = true
-        }
-    }
 
     val scope = rememberCoroutineScope()
     val locationLauncher = rememberLauncherForActivityResult(
@@ -179,14 +170,11 @@ fun HomeScreen(
             }
         }
     }
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = LocalDateTime.now(ZoneId.systemDefault())
-            kotlinx.coroutines.delay(1000L)
-        }
-    }
-    LaunchedEffect(settings.useGps) {
-        if (settings.useGps) {
+
+    // Function to trigger location update
+    val triggerLocationUpdate = {
+        scope.launch {
+            AppSettings.updateUseGps(context, true)
             val fine = ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -195,6 +183,7 @@ fun HomeScreen(
                 context,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
+            
             if (fine || coarse) {
                 loadLocationAndTimings(context, viewModel)
             } else {
@@ -205,8 +194,18 @@ fun HomeScreen(
                     )
                 )
             }
-        } else if (settings.city.isNotEmpty()) {
-            viewModel.refreshTimingsForCity(settings.city)
+        }
+    }
+
+    // Auto-refresh location on start
+    LaunchedEffect(Unit) {
+        triggerLocationUpdate()
+    }
+    
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalDateTime.now(ZoneId.systemDefault())
+            kotlinx.coroutines.delay(1000L)
         }
     }
 
@@ -292,8 +291,8 @@ fun HomeScreen(
                 
                 PrayerSection(
                     state = state, 
-                    onRetry = { viewModel.refreshTimings() },
-                    onLocationClick = { showLocationDialog = true }
+                    onRetry = { triggerLocationUpdate() },
+                    onLocationClick = { triggerLocationUpdate() }
                 )
             }
 
@@ -458,31 +457,6 @@ fun HomeScreen(
         }
         if (showSeasonalWorship) {
             SeasonalWorshipDialog(onDismiss = { showSeasonalWorship = false })
-        }
-        if (showLocationDialog) {
-            LocationSelectionDialog(
-                onDismiss = { showLocationDialog = false },
-                onUseGps = {
-                    showLocationDialog = false
-                    scope.launch {
-                        AppSettings.updateUseGps(context, true)
-                        locationLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                            )
-                        )
-                    }
-                },
-                onManualCity = { city ->
-                    showLocationDialog = false
-                    scope.launch {
-                        AppSettings.updateUseGps(context, false)
-                        AppSettings.updateCity(context, city)
-                        viewModel.refreshTimingsForCity(city)
-                    }
-                }
-            )
         }
     }
 }
@@ -1052,49 +1026,6 @@ fun QuickAccessItem(title: String, icon: androidx.compose.ui.graphics.vector.Ima
     }
 }
 
-@Composable
-fun LocationSelectionDialog(
-    onDismiss: () -> Unit,
-    onUseGps: () -> Unit,
-    onManualCity: (String) -> Unit
-) {
-    var cityInput by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("تحديد الموقع") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(
-                    onClick = onUseGps,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27AE60))
-                ) {
-                    Text("استخدم موقعي الحالي (GPS)")
-                }
-                HorizontalDivider()
-                androidx.compose.material3.OutlinedTextField(
-                    value = cityInput,
-                    onValueChange = { cityInput = it },
-                    label = { Text("أدخل اسم المدينة والدولة") },
-                    placeholder = { Text("مثال: القاهرة، مصر") }
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                if (cityInput.isNotBlank()) {
-                    onManualCity(cityInput)
-                }
-            }) {
-                Text("حفظ المدينة")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("إلغاء")
-            }
-        }
-    )
-}
 
 private suspend fun loadLocationAndTimings(
     context: android.content.Context,
