@@ -101,6 +101,4 @@ fun AppRoot() {
             AppDestination.Notifications -> NotificationsScreen(Modifier.padding(padding))
         }
     }
-}        }
-    }
 }
