@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Warning
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
+    modifier: Modifier = Modifier,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -44,6 +45,7 @@ fun NotificationsScreen(
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("الإشعارات", fontWeight = FontWeight.Bold) },
