@@ -105,11 +105,23 @@ fun SurahListView(
     val surahByNumber = remember { surahs.associateBy { it.number } }
 
     LaunchedEffect(Unit) {
-        offlineReady = withContext(Dispatchers.IO) { repo.isQuranAvailableOffline() }
-        if (tafsirKey == null) {
-            val (k, t) = withContext(Dispatchers.IO) { repo.chooseDefaultArabicTafsirKey() }
-            tafsirKey = k
-            tafsirTitle = t
+        try {
+            offlineReady = withContext(Dispatchers.IO) { repo.isQuranAvailableOffline() }
+            if (tafsirKey == null) {
+                val (k, t) = withContext(Dispatchers.IO) { 
+                    try {
+                        repo.chooseDefaultArabicTafsirKey()
+                    } catch (e: Exception) {
+                        // Fallback in case of network error
+                        "arabic_mokhtasar" to "تفسير مختصر"
+                    }
+                }
+                tafsirKey = k
+                tafsirTitle = t
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            offlineReady = false
         }
     }
 
@@ -428,17 +440,31 @@ fun SurahDetailView(
     var tafsirKey by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(surahItem.number) {
-        offlineReady = withContext(Dispatchers.IO) { repo.isQuranAvailableOffline() }
-        val (k, t) = withContext(Dispatchers.IO) { repo.chooseDefaultArabicTafsirKey() }
-        tafsirKey = k
-        tafsirTitle = t
-        if (offlineReady) {
-            val ayahs = withContext(Dispatchers.IO) { repo.getSurahAyahs(surahItem.number) }
-            ayahsText = ayahs.sortedBy { it.ayah }.map { "${it.ayah}. ${it.text}" }
-            val tfs = withContext(Dispatchers.IO) {
-                repo.getTafsirForSurah(k, surahItem.number)
+        try {
+            offlineReady = withContext(Dispatchers.IO) { repo.isQuranAvailableOffline() }
+            val (k, t) = withContext(Dispatchers.IO) { 
+                try {
+                    repo.chooseDefaultArabicTafsirKey()
+                } catch (e: Exception) {
+                    "arabic_mokhtasar" to "تفسير مختصر"
+                }
             }
-            tafsirText = tfs.associate { it.ayah to it.text }
+            tafsirKey = k
+            tafsirTitle = t
+            if (offlineReady) {
+                val ayahs = withContext(Dispatchers.IO) { repo.getSurahAyahs(surahItem.number) }
+                ayahsText = ayahs.sortedBy { it.ayah }.map { "${it.ayah}. ${it.text}" }
+                val tfs = withContext(Dispatchers.IO) {
+                    try {
+                        repo.getTafsirForSurah(k, surahItem.number)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+                tafsirText = tfs.associate { it.ayah to it.text }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

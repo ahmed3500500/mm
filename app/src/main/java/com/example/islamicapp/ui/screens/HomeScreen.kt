@@ -73,6 +73,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material.icons.filled.Check
@@ -147,6 +148,15 @@ fun HomeScreen(
     var showMentalPeace by remember { mutableStateOf(false) }
     var showSeasonalWorship by remember { mutableStateOf(false) }
     var showLocationDialog by remember { mutableStateOf(false) }
+    var hasPromptedLocation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.cityArabic) {
+        if (!hasPromptedLocation && state.cityArabic == "مكة المكرمة") {
+            showLocationDialog = true
+            hasPromptedLocation = true
+        }
+    }
+
     val scope = rememberCoroutineScope()
     val locationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -577,8 +587,10 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit, onLocationClic
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 val highlightColor = Color(0xFFFFD700)
                 val normalColor = Color.White
