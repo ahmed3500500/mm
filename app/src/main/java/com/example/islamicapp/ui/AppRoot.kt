@@ -98,6 +98,9 @@ fun AppRoot() {
                 modifier = Modifier.padding(padding),
                 onOpenNotifications = { backStack = backStack + AppDestination.Notifications }
             )
+            AppDestination.Notifications -> NotificationsScreen(Modifier.padding(padding))
         }
+    }
+}        }
     }
 }
