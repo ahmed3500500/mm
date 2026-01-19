@@ -19,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,11 +34,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.islamicapp.adhan.AdhanScheduler
 import com.example.islamicapp.prayer.PrayerTimesUiState
 import com.example.islamicapp.prayer.PrayerTimesViewModel
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var now by remember { mutableStateOf(LocalDateTime.now(ZoneId.systemDefault())) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalDateTime.now(ZoneId.systemDefault())
+            kotlinx.coroutines.delay(1000L)
+        }
+    }
     LaunchedEffect(state.nextPrayerName, state.nextPrayerDiffMinutes) {
         if (state.nextPrayerDiffMinutes > 0) {
             AdhanScheduler.scheduleNextAdhan(context, state.nextPrayerDiffMinutes)
@@ -52,13 +65,25 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val timeText = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+        val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
         Text(
-            text = "السلام عليكم",
+            text = "الوقت الآن: $timeText",
             style = MaterialTheme.typography.headlineSmall.copy(
                 color = Color(0xFFFFD700),
                 fontWeight = FontWeight.Bold
             )
         )
+        Text(
+            text = "التاريخ الميلادي: $dateGregorian",
+            style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+        )
+        if (state.hijriDate.isNotEmpty()) {
+            Text(
+                text = "التاريخ الهجري: ${state.hijriDate}",
+                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+            )
+        }
         Text(
             text = "مواقيت الصلاة لليوم",
             style = MaterialTheme.typography.titleMedium.copy(color = Color.White)
