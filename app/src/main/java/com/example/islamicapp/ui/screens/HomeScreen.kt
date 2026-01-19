@@ -1468,3 +1468,4 @@ fun SeasonalWorshipDialog(onDismiss: () -> Unit) {
 }
 
 data class Story(val title: String, val content: String)
+}
