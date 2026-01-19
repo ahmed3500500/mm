@@ -127,7 +127,27 @@ class PrayerTimesViewModel : ViewModel() {
             startTimer()
         } catch (e: Exception) {
             e.printStackTrace()
-            applyFallbackTimings("خطأ: ${e.message}")
+            // Try offline calculation
+            val offlineState = OfflinePrayerCalculator.calculate(latitude, longitude)
+            if (offlineState != null) {
+                _uiState.value = _uiState.value.copy(
+                    cityArabic = cityArabic ?: _uiState.value.cityArabic,
+                    cityEnglish = "Current Location (Offline)",
+                    hijriDate = offlineState.hijriDate.ifEmpty { "التاريخ الهجري غير متاح" },
+                    fajr = offlineState.fajr,
+                    sunrise = offlineState.sunrise,
+                    dhuhr = offlineState.dhuhr,
+                    asr = offlineState.asr,
+                    maghrib = offlineState.maghrib,
+                    isha = offlineState.isha,
+                    isLoading = false,
+                    error = null // No error, we successfully calculated offline
+                )
+                updateNextPrayer()
+                startTimer()
+            } else {
+                applyFallbackTimings("خطأ: ${e.message}")
+            }
         }
     }
 

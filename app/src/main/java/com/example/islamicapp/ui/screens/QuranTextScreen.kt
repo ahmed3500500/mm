@@ -178,23 +178,29 @@ fun SurahListView(
                                 val key = tafsirKey
                                 val title = tafsirTitle
                                 scope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        repo.downloadQuranText { s ->
-                                            val v = s / 114f
-                                            progressValue = v * 0.5f
-                                            progressText = "تحميل القرآن: سورة $s/114"
-                                        }
-                                        if (key != null && title != null) {
-                                            repo.downloadTafsir(key, title) { s ->
+                                    try {
+                                        withContext(Dispatchers.IO) {
+                                            repo.downloadQuranText { s ->
                                                 val v = s / 114f
-                                                progressValue = 0.5f + (v * 0.5f)
-                                                progressText = "تحميل التفسير: سورة $s/114"
+                                                progressValue = v * 0.5f
+                                                progressText = "تحميل القرآن: سورة $s/114"
+                                            }
+                                            if (key != null && title != null) {
+                                                repo.downloadTafsir(key, title) { s ->
+                                                    val v = s / 114f
+                                                    progressValue = 0.5f + (v * 0.5f)
+                                                    progressText = "تحميل التفسير: سورة $s/114"
+                                                }
                                             }
                                         }
+                                        offlineReady = true
+                                        progressText = "تم التحميل ✅"
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        progressText = "فشل التحميل: ${e.message}"
+                                    } finally {
+                                        isDownloading = false
                                     }
-                                    offlineReady = true
-                                    isDownloading = false
-                                    progressText = "تم التحميل ✅"
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700))
