@@ -11,6 +11,13 @@ interface AlAdhanService {
         @Query("country") country: String,
         @Query("method") method: Int = 2
     ): PrayerTimesResponse
+
+    @GET("timings")
+    suspend fun getTimingsByCoordinates(
+        @Query("latitude") latitude: Double,
+        @Query("longitude") longitude: Double,
+        @Query("method") method: Int = 2
+    ): PrayerTimesResponse
 }
 
 data class PrayerTimesResponse(
@@ -37,4 +44,3 @@ data class PrayerTimings(
     @Json(name = "Maghrib") val maghrib: String?,
     @Json(name = "Isha") val isha: String?
 )
-

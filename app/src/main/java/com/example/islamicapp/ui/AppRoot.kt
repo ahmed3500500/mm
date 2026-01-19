@@ -46,10 +46,17 @@ fun AppRoot() {
         }
     ) { padding ->
         when (current) {
-            BottomDestination.Home -> HomeScreen(Modifier.padding(padding))
+            BottomDestination.Home -> HomeScreen(
+                modifier = Modifier.padding(padding),
+                onOpenQuran = { current = BottomDestination.Quran },
+                onOpenTasbeeh = { current = BottomDestination.Tools },
+                onOpenDhikr = { current = BottomDestination.Tools },
+                onOpenQibla = { current = BottomDestination.Tools },
+                onOpenNames = { current = BottomDestination.Tools },
+                onOpenSettings = { current = BottomDestination.Tools }
+            )
             BottomDestination.Quran -> QuranScreen(Modifier.padding(padding))
             BottomDestination.Tools -> MoreScreen(Modifier.padding(padding))
         }
     }
 }
-

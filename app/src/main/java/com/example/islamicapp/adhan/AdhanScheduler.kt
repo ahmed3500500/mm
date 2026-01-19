@@ -24,7 +24,6 @@ object AdhanScheduler {
                 pending
             )
         } catch (e: SecurityException) {
-            // Fallback for Android 12+ if permission is missing
             manager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 triggerAtMillis,
@@ -33,4 +32,3 @@ object AdhanScheduler {
         }
     }
 }
-

@@ -18,5 +18,10 @@ object PrayerTimesRepository {
             api.getTimingsByCity(city, country)
         }
     }
-}
 
+    suspend fun getTimingsByCoordinates(latitude: Double, longitude: Double): PrayerTimesResponse {
+        return withContext(Dispatchers.IO) {
+            api.getTimingsByCoordinates(latitude, longitude)
+        }
+    }
+}

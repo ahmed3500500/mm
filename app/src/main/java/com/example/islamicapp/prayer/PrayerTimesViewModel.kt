@@ -41,45 +41,85 @@ class PrayerTimesViewModel : ViewModel() {
 
     fun refreshTimings() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val response = PrayerTimesRepository.getTimingsByCity(
-                    _uiState.value.cityEnglish,
-                    _uiState.value.countryEnglish
-                )
-                val data = response.data
-                val timings = data?.timings
-                val hijri = data?.date?.hijri?.date.orEmpty()
-                val newState = _uiState.value.copy(
-                    hijriDate = hijri,
-                    fajr = timings?.fajr.orEmpty(),
-                    dhuhr = timings?.dhuhr.orEmpty(),
-                    asr = timings?.asr.orEmpty(),
-                    maghrib = timings?.maghrib.orEmpty(),
-                    isha = timings?.isha.orEmpty(),
-                    isLoading = false
-                )
-                _uiState.value = newState
-                updateNextPrayer()
-                startTimer()
-            } catch (e: Exception) {
-                // Fallback to static times if API fails (offline mode)
-                // This ensures the user sees the beautiful UI even without internet
-                val fallbackState = _uiState.value.copy(
-                    hijriDate = "19 رجب 1447", // Fallback date
-                    fajr = "05:41",
-                    dhuhr = "12:32",
-                    asr = "15:42",
-                    maghrib = "18:02",
-                    isha = "19:32",
-                    isLoading = false,
-                    error = null // Don't show error, show fallback
-                )
-                _uiState.value = fallbackState
-                updateNextPrayer()
-                startTimer()
-            }
+            loadTimingsByCity()
         }
+    }
+
+    fun refreshTimingsForLocation(latitude: Double, longitude: Double, cityArabic: String?) {
+        viewModelScope.launch {
+            loadTimingsByCoordinates(latitude, longitude, cityArabic)
+        }
+    }
+
+    private suspend fun loadTimingsByCity() {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        try {
+            val response = PrayerTimesRepository.getTimingsByCity(
+                _uiState.value.cityEnglish,
+                _uiState.value.countryEnglish
+            )
+            val data = response.data
+            val timings = data?.timings
+            val hijri = data?.date?.hijri?.date.orEmpty()
+            val newState = _uiState.value.copy(
+                hijriDate = hijri,
+                fajr = timings?.fajr.orEmpty(),
+                dhuhr = timings?.dhuhr.orEmpty(),
+                asr = timings?.asr.orEmpty(),
+                maghrib = timings?.maghrib.orEmpty(),
+                isha = timings?.isha.orEmpty(),
+                isLoading = false,
+                error = null
+            )
+            _uiState.value = newState
+            updateNextPrayer()
+            startTimer()
+        } catch (e: Exception) {
+            applyFallbackTimings()
+        }
+    }
+
+    private suspend fun loadTimingsByCoordinates(latitude: Double, longitude: Double, cityArabic: String?) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        try {
+            val response = PrayerTimesRepository.getTimingsByCoordinates(latitude, longitude)
+            val data = response.data
+            val timings = data?.timings
+            val hijri = data?.date?.hijri?.date.orEmpty()
+            val newState = _uiState.value.copy(
+                cityArabic = cityArabic ?: "موقعك الحالي",
+                cityEnglish = "Current",
+                hijriDate = hijri,
+                fajr = timings?.fajr.orEmpty(),
+                dhuhr = timings?.dhuhr.orEmpty(),
+                asr = timings?.asr.orEmpty(),
+                maghrib = timings?.maghrib.orEmpty(),
+                isha = timings?.isha.orEmpty(),
+                isLoading = false,
+                error = null
+            )
+            _uiState.value = newState
+            updateNextPrayer()
+            startTimer()
+        } catch (e: Exception) {
+            applyFallbackTimings()
+        }
+    }
+
+    private fun applyFallbackTimings() {
+        val fallbackState = _uiState.value.copy(
+            hijriDate = "19 رجب 1447",
+            fajr = "05:41",
+            dhuhr = "12:32",
+            asr = "15:42",
+            maghrib = "18:02",
+            isha = "19:32",
+            isLoading = false,
+            error = null
+        )
+        _uiState.value = fallbackState
+        updateNextPrayer()
+        startTimer()
     }
 
     private fun startTimer() {

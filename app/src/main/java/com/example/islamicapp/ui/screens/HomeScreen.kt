@@ -1,15 +1,13 @@
 package com.example.islamicapp.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import com.example.islamicapp.R
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,33 +29,87 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.islamicapp.R
 import com.example.islamicapp.adhan.AdhanScheduler
 import com.example.islamicapp.prayer.PrayerTimesUiState
 import com.example.islamicapp.prayer.PrayerTimesViewModel
+import com.google.android.gms.location.LocationServices
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = viewModel()) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: PrayerTimesViewModel = viewModel(),
+    onOpenQuran: () -> Unit = {},
+    onOpenTasbeeh: () -> Unit = {},
+    onOpenDhikr: () -> Unit = {},
+    onOpenQibla: () -> Unit = {},
+    onOpenNames: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
+) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var now by remember { mutableStateOf(LocalDateTime.now(ZoneId.systemDefault())) }
+    val scope = rememberCoroutineScope()
+    val locationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            scope.launch {
+                loadLocationAndTimings(context, viewModel)
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         while (true) {
             now = LocalDateTime.now(ZoneId.systemDefault())
             kotlinx.coroutines.delay(1000L)
         }
     }
+    LaunchedEffect(Unit) {
+        val fine = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        if (fine || coarse) {
+            loadLocationAndTimings(context, viewModel)
+        } else {
+            locationLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
     LaunchedEffect(state.nextPrayerName, state.nextPrayerDiffMinutes) {
         if (state.nextPrayerDiffMinutes > 0) {
             AdhanScheduler.scheduleNextAdhan(context, state.nextPrayerDiffMinutes)
@@ -63,7 +117,6 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
     }
     
     Box(modifier = modifier.fillMaxSize()) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.bg_home),
             contentDescription = null,
@@ -71,7 +124,6 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
             modifier = Modifier.fillMaxSize()
         )
         
-        // Content Overlay
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,7 +133,6 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
             val timeText = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
             val dateGregorian = now.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
             
-            // Header Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -142,7 +193,6 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Navigation Grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -150,22 +200,46 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: PrayerTimesViewModel = 
                 modifier = Modifier.fillMaxWidth()
             ) {
                 item {
-                    FeatureCard(title = "القرآن الكريم", subtitle = "تلاوة مشاري العفاسي")
+                    FeatureCard(
+                        title = "القرآن الكريم",
+                        subtitle = "تلاوة مشاري العفاسي",
+                        onClick = onOpenQuran
+                    )
                 }
                 item {
-                    FeatureCard(title = "السبحة الإلكترونية", subtitle = "عد تسبيح متقدم")
+                    FeatureCard(
+                        title = "السبحة الإلكترونية",
+                        subtitle = "عد تسبيح متقدم",
+                        onClick = onOpenTasbeeh
+                    )
                 }
                 item {
-                    FeatureCard(title = "أذكارك اليومية", subtitle = "الصباح، المساء، النوم")
+                    FeatureCard(
+                        title = "أذكارك اليومية",
+                        subtitle = "الصباح، المساء، النوم",
+                        onClick = onOpenDhikr
+                    )
                 }
                 item {
-                    FeatureCard(title = "اتجاه القبلة", subtitle = "تحديد القبلة بدقة")
+                    FeatureCard(
+                        title = "اتجاه القبلة",
+                        subtitle = "تحديد القبلة بدقة",
+                        onClick = onOpenQibla
+                    )
                 }
                 item {
-                    FeatureCard(title = "أسماء الله الحسنى", subtitle = "شرح 99 اسم")
+                    FeatureCard(
+                        title = "أسماء الله الحسنى",
+                        subtitle = "شرح 99 اسم",
+                        onClick = onOpenNames
+                    )
                 }
                 item {
-                    FeatureCard(title = "الإعدادات", subtitle = "المدينة، الصوت، الثيم")
+                    FeatureCard(
+                        title = "الإعدادات",
+                        subtitle = "المدينة، الصوت، الثيم",
+                        onClick = onOpenSettings
+                    )
                 }
             }
         }
@@ -276,10 +350,12 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
 fun FeatureCard(
     title: String,
     subtitle: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
+        onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF14402A).copy(alpha = 0.85f)
         ),
@@ -292,5 +368,27 @@ fun FeatureCard(
             Text(text = title, color = Color(0xFFFFD700), fontWeight = FontWeight.Bold)
             Text(text = subtitle, color = Color.White, fontSize = 12.sp)
         }
+    }
+}
+
+private suspend fun loadLocationAndTimings(
+    context: android.content.Context,
+    viewModel: PrayerTimesViewModel
+) {
+    try {
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        val location = client.lastLocation.await() ?: return
+        val geocoder = Geocoder(context, Locale.getDefault())
+        val addresses = kotlinx.coroutines.withContext(Dispatchers.IO) {
+            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        }
+        val cityName = if (!addresses.isNullOrEmpty()) {
+            addresses[0].locality ?: addresses[0].subAdminArea ?: addresses[0].adminArea
+        } else {
+            null
+        }
+        viewModel.refreshTimingsForLocation(location.latitude, location.longitude, cityName)
+    } catch (e: SecurityException) {
+    } catch (e: Exception) {
     }
 }
