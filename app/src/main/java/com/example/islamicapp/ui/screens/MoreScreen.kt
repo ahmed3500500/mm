@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import com.example.islamicapp.qibla.QiblaCalculator
 import com.example.islamicapp.tasbeeh.TasbeehPreferences
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class DhikrItem(
@@ -279,7 +281,7 @@ private fun SettingsPreviewSection() {
 }
 
 private fun saveTasbeehAsync(context: Context, value: Int) {
-    kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+    GlobalScope.launch(Dispatchers.IO) {
         TasbeehPreferences.saveCount(context, value)
     }
 }
