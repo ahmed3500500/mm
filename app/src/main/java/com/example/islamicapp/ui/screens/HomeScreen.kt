@@ -375,20 +375,29 @@ private suspend fun loadLocationAndTimings(
     context: android.content.Context,
     viewModel: PrayerTimesViewModel
 ) {
+    var cityName: String? = null
     try {
         val client = LocationServices.getFusedLocationProviderClient(context)
-        val location = client.lastLocation.await() ?: return
-        val geocoder = Geocoder(context, Locale.getDefault())
-        val addresses = kotlinx.coroutines.withContext(Dispatchers.IO) {
-            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        val location = client.lastLocation.await()
+        if (location != null) {
+            try {
+                val geocoder = Geocoder(context, Locale("ar")) // Use Arabic locale for city name
+                @Suppress("DEPRECATION")
+                val addresses = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                    geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                }
+                if (!addresses.isNullOrEmpty()) {
+                    cityName = addresses[0].locality 
+                        ?: addresses[0].subAdminArea 
+                        ?: addresses[0].adminArea
+                }
+            } catch (e: Exception) {
+                // Geocoder failed, but we still have coordinates
+            }
+            // Always update timings with coordinates, even if city name lookup failed
+            viewModel.refreshTimingsForLocation(location.latitude, location.longitude, cityName)
         }
-        val cityName = if (!addresses.isNullOrEmpty()) {
-            addresses[0].locality ?: addresses[0].subAdminArea ?: addresses[0].adminArea
-        } else {
-            null
-        }
-        viewModel.refreshTimingsForLocation(location.latitude, location.longitude, cityName)
-    } catch (e: SecurityException) {
     } catch (e: Exception) {
+        // Location retrieval failed
     }
 }

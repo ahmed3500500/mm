@@ -58,10 +58,16 @@ fun QuranScreen(modifier: Modifier = Modifier) {
             .padding(16.dp)
     ) {
         Text(
-            text = "القرآن الكريم",
+            text = "القرآن الكريم مع التفسير",
             style = MaterialTheme.typography.headlineSmall.copy(
-                color = Color(0xFFFFD700)
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.Bold
             )
+        )
+        Text(
+            text = "قريباً: إضافة النص الكامل والتفسير",
+            style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+            modifier = Modifier.padding(bottom = 8.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
         if (current != null) {

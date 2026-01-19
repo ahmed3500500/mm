@@ -2,7 +2,14 @@ package com.example.islamicapp.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,26 +22,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Timer
+import com.example.islamicapp.ui.screens.DhikrScreen
 import com.example.islamicapp.ui.screens.HomeScreen
-import com.example.islamicapp.ui.screens.QuranScreen
 import com.example.islamicapp.ui.screens.MoreScreen
+import com.example.islamicapp.ui.screens.NamesScreen
+import com.example.islamicapp.ui.screens.QiblaScreen
+import com.example.islamicapp.ui.screens.QuranScreen
+import com.example.islamicapp.ui.screens.SettingsScreen
+import com.example.islamicapp.ui.screens.TasbeehScreen
 
-enum class BottomDestination(val label: String, val icon: ImageVector) {
-    Home("الرئيسية", Icons.Filled.Home),
-    Quran("القرآن", Icons.Filled.QrCode),
-    Tools("المزيد", Icons.Filled.MoreHoriz)
+enum class AppDestination(val label: String, val icon: ImageVector, val isBottomItem: Boolean) {
+    Home("الرئيسية", Icons.Filled.Home, true),
+    Quran("القرآن", Icons.Filled.QrCode, true),
+    More("المزيد", Icons.Filled.MoreHoriz, true),
+    Tasbeeh("السبحة", Icons.Filled.Timer, false),
+    Dhikr("الأذكار", Icons.Filled.MenuBook, false),
+    Qibla("القبلة", Icons.Filled.Explore, false),
+    Names("الأسماء", Icons.Filled.List, false),
+    Settings("الإعدادات", Icons.Filled.Settings, false)
 }
 
 @Composable
 fun AppRoot() {
-    var current by remember { mutableStateOf(BottomDestination.Home) }
+    var current by remember { mutableStateOf(AppDestination.Home) }
     Scaffold(
         bottomBar = {
             NavigationBar {
-                BottomDestination.values().forEach { dest ->
+                AppDestination.values().filter { it.isBottomItem }.forEach { dest ->
                     NavigationBarItem(
                         selected = current == dest,
                         onClick = { current = dest },
@@ -46,17 +60,22 @@ fun AppRoot() {
         }
     ) { padding ->
         when (current) {
-            BottomDestination.Home -> HomeScreen(
+            AppDestination.Home -> HomeScreen(
                 modifier = Modifier.padding(padding),
-                onOpenQuran = { current = BottomDestination.Quran },
-                onOpenTasbeeh = { current = BottomDestination.Tools },
-                onOpenDhikr = { current = BottomDestination.Tools },
-                onOpenQibla = { current = BottomDestination.Tools },
-                onOpenNames = { current = BottomDestination.Tools },
-                onOpenSettings = { current = BottomDestination.Tools }
+                onOpenQuran = { current = AppDestination.Quran },
+                onOpenTasbeeh = { current = AppDestination.Tasbeeh },
+                onOpenDhikr = { current = AppDestination.Dhikr },
+                onOpenQibla = { current = AppDestination.Qibla },
+                onOpenNames = { current = AppDestination.Names },
+                onOpenSettings = { current = AppDestination.Settings }
             )
-            BottomDestination.Quran -> QuranScreen(Modifier.padding(padding))
-            BottomDestination.Tools -> MoreScreen(Modifier.padding(padding))
+            AppDestination.Quran -> QuranScreen(Modifier.padding(padding))
+            AppDestination.More -> MoreScreen(Modifier.padding(padding))
+            AppDestination.Tasbeeh -> TasbeehScreen(Modifier.padding(padding))
+            AppDestination.Dhikr -> DhikrScreen(Modifier.padding(padding))
+            AppDestination.Qibla -> QiblaScreen(Modifier.padding(padding))
+            AppDestination.Names -> NamesScreen(Modifier.padding(padding))
+            AppDestination.Settings -> SettingsScreen(Modifier.padding(padding))
         }
     }
 }
