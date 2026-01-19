@@ -131,7 +131,7 @@ class PrayerTimesViewModel : ViewModel() {
         }
     }
 
-    private fun applyFallbackTimings() {
+    private fun applyFallbackTimings(errorMessage: String? = null) {
         // Preserve current city info if available, otherwise default to Makkah
         val currentCityArabic = if (_uiState.value.cityArabic != "مكة المكرمة") _uiState.value.cityArabic else "مكة المكرمة"
         val currentCityEnglish = if (_uiState.value.cityEnglish != "Makkah") _uiState.value.cityEnglish else "Makkah"
@@ -147,7 +147,7 @@ class PrayerTimesViewModel : ViewModel() {
             maghrib = "18:02",
             isha = "19:32",
             isLoading = false,
-            error = "فشل في جلب المواقيت. يرجى التحقق من الإنترنت."
+            error = errorMessage ?: "فشل في جلب المواقيت. يرجى التحقق من الإنترنت."
         )
         _uiState.value = fallbackState
         updateNextPrayer()
