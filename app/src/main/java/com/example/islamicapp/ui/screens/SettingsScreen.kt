@@ -156,7 +156,7 @@ private fun settingsStringsFor(language: AppLanguage): SettingsStrings {
 }
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(modifier: Modifier = Modifier, onOpenNotifications: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val settings by AppSettings.observe(context).collectAsState(

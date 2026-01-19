@@ -94,7 +94,10 @@ fun AppRoot() {
             AppDestination.Dhikr -> DhikrScreen(Modifier.padding(padding))
             AppDestination.Qibla -> QiblaScreen(Modifier.padding(padding))
             AppDestination.Names -> NamesScreen(Modifier.padding(padding))
-            AppDestination.Settings -> SettingsScreen(Modifier.padding(padding))
+            AppDestination.Settings -> SettingsScreen(
+                modifier = Modifier.padding(padding),
+                onOpenNotifications = { backStack = backStack + AppDestination.Notifications }
+            )
         }
     }
 }

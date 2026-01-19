@@ -948,7 +948,7 @@ fun MuslimGuideSection() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items.forEach { item ->
+            items.forEach { item: GuideItem ->
                 GuideCard(
                     item = item,
                     modifier = Modifier.weight(1f),
