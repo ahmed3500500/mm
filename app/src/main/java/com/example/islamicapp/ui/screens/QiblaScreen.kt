@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -150,16 +151,6 @@ fun QiblaScreen(modifier: Modifier = Modifier) {
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Background compass dial (North/South/East/West)
-                // Rotating opposite to azimuth to keep North pointing North
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder or use a compass dial image if available
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize().rotate(-azimuth),
-                    alpha = 0.3f
-                )
-                
-                // Qibla Pointer
                 Column(
                     modifier = Modifier.fillMaxSize().rotate(rotation),
                     horizontalAlignment = Alignment.CenterHorizontally,

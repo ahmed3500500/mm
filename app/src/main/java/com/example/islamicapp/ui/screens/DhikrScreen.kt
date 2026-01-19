@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -31,37 +33,37 @@ fun DhikrScreen(modifier: Modifier = Modifier) {
         DhikrCategory(
             "أذكار الصباح",
             listOf(
-                DhikrItem("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
-                DhikrItem("سيد الاستغفار", "اللهم أنت ربي لا إله إلا أنت...", 1),
-                DhikrItem("الحمد لله", "الحمد لله الذي أحيانا بعد ما أماتنا وإليه النشور", 1),
-                DhikrItem("بسم الله", "بسم الله الذي لا يضر مع اسمه شيء في الأرض ولا في السماء...", 3)
+                DhikrEntry("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
+                DhikrEntry("سيد الاستغفار", "اللهم أنت ربي لا إله إلا أنت...", 1),
+                DhikrEntry("الحمد لله", "الحمد لله الذي أحيانا بعد ما أماتنا وإليه النشور", 1),
+                DhikrEntry("بسم الله", "بسم الله الذي لا يضر مع اسمه شيء في الأرض ولا في السماء...", 3)
             )
         ),
         DhikrCategory(
             "أذكار المساء",
             listOf(
-                DhikrItem("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
-                DhikrItem("سيد الاستغفار", "اللهم أنت ربي لا إله إلا أنت...", 1),
-                DhikrItem("أمسينا وأمسى الملك لله", "أمسينا وأمسى الملك لله والحمد لله...", 1),
-                DhikrItem("أعوذ بكلمات الله", "أعوذ بكلمات الله التامات من شر ما خلق", 3)
+                DhikrEntry("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
+                DhikrEntry("سيد الاستغفار", "اللهم أنت ربي لا إله إلا أنت...", 1),
+                DhikrEntry("أمسينا وأمسى الملك لله", "أمسينا وأمسى الملك لله والحمد لله...", 1),
+                DhikrEntry("أعوذ بكلمات الله", "أعوذ بكلمات الله التامات من شر ما خلق", 3)
             )
         ),
         DhikrCategory(
             "أذكار بعد الصلاة",
             listOf(
-                DhikrItem("الاستغفار", "أستغفر الله، أستغفر الله، أستغفر الله", 3),
-                DhikrItem("التسبيح", "سبحان الله", 33),
-                DhikrItem("التحميد", "الحمد لله", 33),
-                DhikrItem("التكبير", "الله أكبر", 33),
-                DhikrItem("التهليل", "لا إله إلا الله وحده لا شريك له...", 1)
+                DhikrEntry("الاستغفار", "أستغفر الله، أستغفر الله، أستغفر الله", 3),
+                DhikrEntry("التسبيح", "سبحان الله", 33),
+                DhikrEntry("التحميد", "الحمد لله", 33),
+                DhikrEntry("التكبير", "الله أكبر", 33),
+                DhikrEntry("التهليل", "لا إله إلا الله وحده لا شريك له...", 1)
             )
         ),
         DhikrCategory(
             "أذكار النوم",
             listOf(
-                DhikrItem("باسمك اللهم", "باسمك اللهم أموت وأحيا", 1),
-                DhikrItem("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
-                DhikrItem("سورة الإخلاص والمعوذتين", "قل هو الله أحد...", 3)
+                DhikrEntry("باسمك اللهم", "باسمك اللهم أموت وأحيا", 1),
+                DhikrEntry("آية الكرسي", "الله لا إله إلا هو الحي القيوم...", 1),
+                DhikrEntry("سورة الإخلاص والمعوذتين", "قل هو الله أحد...", 3)
             )
         )
     )
@@ -163,10 +165,10 @@ fun DhikrCategoryCard(category: DhikrCategory) {
 
 data class DhikrCategory(
     val title: String,
-    val items: List<DhikrItem>
+    val items: List<DhikrEntry>
 )
 
-data class DhikrItem(
+data class DhikrEntry(
     val title: String,
     val text: String,
     val count: Int
