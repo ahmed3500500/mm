@@ -53,16 +53,24 @@ fun QiblaScreen(modifier: Modifier = Modifier) {
     var azimuth by remember { mutableFloatStateOf(0f) }
     var qiblaBearing by remember { mutableFloatStateOf(0f) }
     var isAligned by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var distanceKm by remember { mutableFloatStateOf(0f) }
     
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     
     LaunchedEffect(Unit) {
         try {
-            val bearing = withContext(Dispatchers.IO) {
-                QiblaCalculator.getQiblaBearing(context)
+            val result = withContext(Dispatchers.IO) {
+                val bearing = QiblaCalculator.getQiblaBearing(context)
+                val distance = QiblaCalculator.getDistanceToKaabaKm(context)
+                Pair(bearing, distance)
             }
+            val bearing = result.first
+            val distance = result.second
             if (bearing != null) {
                 qiblaBearing = bearing
+            }
+            if (distance != null) {
+                distanceKm = distance
             }
         } catch (e: Exception) {
             // Handle error (e.g., location permission not granted)
@@ -188,6 +196,14 @@ fun QiblaScreen(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+            if (distanceKm > 0f) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "المسافة إلى مكة تقريباً ${distanceKm.toInt()} كم",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }

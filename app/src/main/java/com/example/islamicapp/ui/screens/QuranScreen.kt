@@ -32,21 +32,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.islamicapp.data.QuranData
+import com.example.islamicapp.data.SurahItem
 import com.example.islamicapp.quran.QuranPlayer
-
-data class SurahItem(
-    val number: Int,
-    val name: String
-)
 
 @Composable
 fun QuranScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val surahs = remember {
-        (1..114).map { number ->
-            SurahItem(number, "سورة $number")
-        }
-    }
+    val surahs = remember { QuranData.getSurahList() }
     var current by remember { mutableStateOf<SurahItem?>(null) }
     Column(
         modifier = modifier
@@ -59,16 +52,11 @@ fun QuranScreen(modifier: Modifier = Modifier) {
             .padding(16.dp)
     ) {
         Text(
-            text = "القرآن الكريم مع التفسير",
+            text = "القرآن الكريم (صوت)",
             style = MaterialTheme.typography.headlineSmall.copy(
                 color = Color(0xFFFFD700),
                 fontWeight = FontWeight.Bold
             )
-        )
-        Text(
-            text = "قريباً: إضافة النص الكامل والتفسير",
-            style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-            modifier = Modifier.padding(bottom = 8.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
         if (current != null) {

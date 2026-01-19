@@ -17,6 +17,7 @@ data class PrayerTimesUiState(
     val countryEnglish: String = "Saudi Arabia",
     val hijriDate: String = "",
     val fajr: String = "",
+    val sunrise: String = "",
     val dhuhr: String = "",
     val asr: String = "",
     val maghrib: String = "",
@@ -64,6 +65,7 @@ class PrayerTimesViewModel : ViewModel() {
             val newState = _uiState.value.copy(
                 hijriDate = hijri,
                 fajr = timings?.fajr.orEmpty(),
+                sunrise = timings?.sunrise.orEmpty(),
                 dhuhr = timings?.dhuhr.orEmpty(),
                 asr = timings?.asr.orEmpty(),
                 maghrib = timings?.maghrib.orEmpty(),
@@ -91,6 +93,7 @@ class PrayerTimesViewModel : ViewModel() {
                 cityEnglish = "Current",
                 hijriDate = hijri,
                 fajr = timings?.fajr.orEmpty(),
+                sunrise = timings?.sunrise.orEmpty(),
                 dhuhr = timings?.dhuhr.orEmpty(),
                 asr = timings?.asr.orEmpty(),
                 maghrib = timings?.maghrib.orEmpty(),
@@ -110,6 +113,7 @@ class PrayerTimesViewModel : ViewModel() {
         val fallbackState = _uiState.value.copy(
             hijriDate = "19 رجب 1447",
             fajr = "05:41",
+            sunrise = "06:59",
             dhuhr = "12:32",
             asr = "15:42",
             maghrib = "18:02",

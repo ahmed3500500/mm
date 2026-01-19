@@ -39,6 +39,7 @@ data class HijriDate(
 
 data class PrayerTimings(
     @Json(name = "Fajr") val fajr: String?,
+    @Json(name = "Sunrise") val sunrise: String?,
     @Json(name = "Dhuhr") val dhuhr: String?,
     @Json(name = "Asr") val asr: String?,
     @Json(name = "Maghrib") val maghrib: String?,

@@ -28,12 +28,14 @@ import com.example.islamicapp.ui.screens.MoreScreen
 import com.example.islamicapp.ui.screens.NamesScreen
 import com.example.islamicapp.ui.screens.QiblaScreen
 import com.example.islamicapp.ui.screens.QuranScreen
+import com.example.islamicapp.ui.screens.QuranTextScreen
 import com.example.islamicapp.ui.screens.SettingsScreen
 import com.example.islamicapp.ui.screens.TasbeehScreen
 
 enum class AppDestination(val label: String, val icon: ImageVector, val isBottomItem: Boolean) {
     Home("الرئيسية", Icons.Filled.Home, true),
-    Quran("القرآن", Icons.Filled.QrCode, true),
+    QuranAudio("القرآن صوت", Icons.Filled.QrCode, true),
+    QuranText("القرآن قراءة", Icons.Filled.MenuBook, false),
     More("المزيد", Icons.Filled.MoreHoriz, true),
     Tasbeeh("السبحة", Icons.Filled.Timer, false),
     Dhikr("الأذكار", Icons.Filled.MenuBook, false),
@@ -62,14 +64,16 @@ fun AppRoot() {
         when (current) {
             AppDestination.Home -> HomeScreen(
                 modifier = Modifier.padding(padding),
-                onOpenQuran = { current = AppDestination.Quran },
+                onOpenQuranAudio = { current = AppDestination.QuranAudio },
+                onOpenQuranText = { current = AppDestination.QuranText },
                 onOpenTasbeeh = { current = AppDestination.Tasbeeh },
                 onOpenDhikr = { current = AppDestination.Dhikr },
                 onOpenQibla = { current = AppDestination.Qibla },
                 onOpenNames = { current = AppDestination.Names },
                 onOpenSettings = { current = AppDestination.Settings }
             )
-            AppDestination.Quran -> QuranScreen(Modifier.padding(padding))
+            AppDestination.QuranAudio -> QuranScreen(Modifier.padding(padding))
+            AppDestination.QuranText -> QuranTextScreen(Modifier.padding(padding))
             AppDestination.More -> MoreScreen(Modifier.padding(padding))
             AppDestination.Tasbeeh -> TasbeehScreen(Modifier.padding(padding))
             AppDestination.Dhikr -> DhikrScreen(Modifier.padding(padding))

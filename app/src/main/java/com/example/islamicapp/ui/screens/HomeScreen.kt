@@ -321,25 +321,48 @@ fun PrayerSection(state: PrayerTimesUiState, onRetry: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                val highlightColor = Color(0xFFFFD700)
+                val normalColor = Color.White
+                val nextName = state.nextPrayerName
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "الفجر", color = Color(0xFFFFD700))
-                    Text(text = state.fajr, color = Color.White)
+                    Text(
+                        text = state.fajr,
+                        color = if (nextName == "الفجر") highlightColor else normalColor
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "الشروق", color = Color(0xFFFFD700))
+                    Text(text = state.sunrise, color = normalColor)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "الظهر", color = Color(0xFFFFD700))
-                    Text(text = state.dhuhr, color = Color.White)
+                    Text(
+                        text = state.dhuhr,
+                        color = if (nextName == "الظهر") highlightColor else normalColor
+                    )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "العصر", color = Color(0xFFFFD700))
-                    Text(text = state.asr, color = Color.White)
+                    Text(
+                        text = state.asr,
+                        color = if (nextName == "العصر") highlightColor else normalColor
+                    )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "المغرب", color = Color(0xFFFFD700))
-                    Text(text = state.maghrib, color = Color.White)
+                    Text(
+                        text = state.maghrib,
+                        color = if (nextName == "المغرب") highlightColor else normalColor
+                    )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "العشاء", color = Color(0xFFFFD700))
-                    Text(text = state.isha, color = Color.White)
+                    Text(
+                        text = state.isha,
+                        color = if (nextName == "العشاء") highlightColor else normalColor
+                    )
                 }
             }
         }
