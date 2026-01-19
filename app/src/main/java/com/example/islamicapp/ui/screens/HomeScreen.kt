@@ -141,6 +141,14 @@ fun HomeScreen(
     val ibadahState by ibadahFlow.collectAsState(
         initial = DailyIbadahState()
     )
+    
+    // Auto-refresh location if GPS is enabled in settings
+    LaunchedEffect(settings.useGps) {
+        if (settings.useGps) {
+            loadLocationAndTimings(context, viewModel)
+        }
+    }
+
     var now by remember { mutableStateOf(LocalDateTime.now(ZoneId.systemDefault())) }
     var showNightPrayer by remember { mutableStateOf(false) }
     var showFamilySection by remember { mutableStateOf(false) }
@@ -1065,8 +1073,8 @@ fun LocationSelectionDialog(
                 androidx.compose.material3.OutlinedTextField(
                     value = cityInput,
                     onValueChange = { cityInput = it },
-                    label = { Text("أدخل اسم المدينة يدوياً") },
-                    placeholder = { Text("مثال: القاهرة") }
+                    label = { Text("أدخل اسم المدينة والدولة") },
+                    placeholder = { Text("مثال: القاهرة، مصر") }
                 )
             }
         },
@@ -1087,34 +1095,64 @@ fun LocationSelectionDialog(
     )
 }
 
+import com.google.android.gms.location.Priority
+import androidx.core.content.ContextCompat
+
 private suspend fun loadLocationAndTimings(
     context: android.content.Context,
     viewModel: PrayerTimesViewModel
 ) {
     var cityName: String? = null
     try {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+
         val client = LocationServices.getFusedLocationProviderClient(context)
-        val location = client.lastLocation.await()
+        var location = client.lastLocation.await()
+        
+        if (location == null) {
+            location = client.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+        }
+
         if (location != null) {
             try {
                 val geocoder = Geocoder(context, Locale("ar"))
                 @Suppress("DEPRECATION")
                 val addresses = kotlinx.coroutines.withContext(Dispatchers.IO) {
-                    geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                    try {
+                        geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
                 if (!addresses.isNullOrEmpty()) {
-                    cityName = addresses[0].locality
-                        ?: addresses[0].subAdminArea
-                        ?: addresses[0].adminArea
+                    val address = addresses[0]
+                    cityName = address.locality 
+                        ?: address.subAdminArea 
+                        ?: address.adminArea
+                    
+                    val country = address.countryName
+                    if (!cityName.isNullOrEmpty() && !country.isNullOrEmpty()) {
+                        cityName = "$cityName، $country"
+                    } else if (cityName.isNullOrEmpty() && !country.isNullOrEmpty()) {
+                        cityName = country
+                    }
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
             }
-            if (!cityName.isNullOrEmpty()) {
-                AppSettings.updateCity(context, cityName!!)
+            
+            if (cityName.isNullOrEmpty()) {
+                cityName = "الموقع الحالي"
             }
+            
+            AppSettings.updateCity(context, cityName!!)
             viewModel.refreshTimingsForLocation(location.latitude, location.longitude, cityName)
         }
     } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
