@@ -116,6 +116,7 @@ fun HomeScreen(
     var showFamilySection by remember { mutableStateOf(false) }
     var showRighteousPath by remember { mutableStateOf(false) }
     var showMentalPeace by remember { mutableStateOf(false) }
+    var showSeasonalWorship by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val locationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -304,6 +305,10 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            DailyActionSuggestionSection()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -368,6 +373,13 @@ fun HomeScreen(
                 }
                 item {
                     FeatureCard(
+                        title = "العبادات الموسمية",
+                        subtitle = "خطط رمضان، العشر الأواخر، الحج",
+                        onClick = { showSeasonalWorship = true }
+                    )
+                }
+                item {
+                    FeatureCard(
                         title = "اتجاه القبلة",
                         subtitle = "تحديد القبلة بدقة",
                         onClick = onOpenQibla
@@ -401,6 +413,9 @@ fun HomeScreen(
         }
         if (showMentalPeace) {
             MentalPeaceDialog(onDismiss = { showMentalPeace = false })
+        }
+        if (showSeasonalWorship) {
+            SeasonalWorshipDialog(onDismiss = { showSeasonalWorship = false })
         }
     }
 }
@@ -1092,6 +1107,75 @@ fun GoodDeedsSection() {
 }
 
 @Composable
+fun DailyActionSuggestionSection() {
+    val actions = listOf(
+        "تصدق ولو بالقليل",
+        "صل ركعتي الضحى",
+        "اتصل بقريب لك (صلة رحم)",
+        "اقرأ صفحتين من القرآن",
+        "سبح الله 100 مرة",
+        "استغفر الله 100 مرة",
+        "أطعم مسكيناً أو طائراً",
+        "زر مريضاً إن استطعت",
+        "ابتسم في وجه من تقابل",
+        "أماط الأذى عن الطريق"
+    )
+    val dayOfYear = java.time.LocalDate.now().dayOfYear
+    val action = actions[dayOfYear % actions.size]
+    var isDone by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E272E)),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "ماذا أفعل اليوم؟",
+                color = Color(0xFFFFD700),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = action,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                FilterChip(
+                    selected = isDone,
+                    onClick = { isDone = !isDone },
+                    label = { Text(if (isDone) "تمت" else "لم تتم") },
+                    leadingIcon = {
+                        if (isDone) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF27AE60),
+                        selectedLabelColor = Color.White,
+                        containerColor = Color(0xFF2D3436),
+                        labelColor = Color.White
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun NightPrayerDialog(onDismiss: () -> Unit) {
     var rakahs by remember { mutableStateOf(2) }
     var finished by remember { mutableStateOf(false) }
@@ -1303,6 +1387,79 @@ fun MentalPeaceDialog(onDismiss: () -> Unit) {
                         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                             Text(text, modifier = Modifier.padding(24.dp), fontSize = 18.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Medium, color = Color(0xFF2C3E50))
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SeasonalWorshipDialog(onDismiss: () -> Unit) {
+    var selectedSeason by remember { mutableStateOf<String?>(null) }
+    
+    val seasons = mapOf(
+        "شهر رمضان" to listOf(
+            "ختم القرآن مرة واحدة على الأقل",
+            "صلاة التراويح يومياً",
+            "إفطار صائم ولو بتمرة",
+            "الصدقة اليومية"
+        ),
+        "العشر الأواخر" to listOf(
+            "الاعتكاف إن تيسر",
+            "تحري ليلة القدر",
+            "الإكثار من الدعاء",
+            "إخراج زكاة الفطر"
+        ),
+        "عشر ذي الحجة" to listOf(
+            "الصيام (خاصة يوم عرفة)",
+            "الإكثار من التكبير والتهليل",
+            "الأضحية",
+            "صدقة السر"
+        )
+    )
+
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("العبادات الموسمية", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, contentDescription = null) }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (selectedSeason == null) {
+                    Text("اختر الموسم لعرض الخطة:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    seasons.keys.forEach { season ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { selectedSeason = season },
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F7FA))
+                        ) {
+                            Text(season, modifier = Modifier.padding(20.dp), fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                } else {
+                    Text("خطة $selectedSeason", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF006064))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    seasons[selectedSeason]?.forEachIndexed { index, plan ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE1F5FE))
+                        ) {
+                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text("${index + 1}.", fontWeight = FontWeight.Bold, color = Color(0xFF006064))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(plan, fontSize = 16.sp)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(onClick = { selectedSeason = null }) {
+                        Text("عودة للقائمة")
                     }
                 }
             }
